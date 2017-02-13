@@ -60,7 +60,7 @@ public class EntryTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidZoomLevelMax() {
-    //new Entry(MAX_ZOOM + 1, 1, 1, getGarbageBytes());
+    new Entry(MAX_ZOOM + 1, 1, 1, getGarbageBytes());
   }
 
   @Test(expected = IllegalArgumentException.class)
