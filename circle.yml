@@ -1,0 +1,4 @@
+test:
+   override:
+      - ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest 
+

@@ -46,9 +46,6 @@ public class StorageImplTest {
 
   @Test
   public void testGenerateDefaultIsNullWhenNoTiles() throws IOException, JSONException {
-    if (true) {
-      throw new IOException("does this break the build?!");
-    }
     
     final File file = provideNonExistentTestDirectoryOrBlow();
     boolean isSuccess = file.mkdirs();
