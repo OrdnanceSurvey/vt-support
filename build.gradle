@@ -1,0 +1,54 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+apply plugin: "eclipse"
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    apply from: file('gradle/buildscript.gradle'), to: buildscript
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
+        }
+    }
+}
+
+apply from: file('gradle/check.gradle')
+apply from: file('gradle/license.gradle')
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
+
+allprojects {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            // consider -Xlint:all or -Xlint
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+}
+
+ext {
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
+    targetCompatibilityVersion = JavaVersion.VERSION_1_8
+}
+
+ext.deps = [
+        // Test dependencies
+        junit      : 'junit:junit:4.12',
+
+        // Lint dependencies
+        lintapi    : 'com.android.tools.lint:lint-api:24.3.1',
+        lintchecks : 'com.android.tools.lint:lint-checks:24.3.1'
+]

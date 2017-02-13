@@ -1,0 +1,67 @@
+// coverage reporting
+plugins {
+    id "jacoco"
+}
+
+apply plugin: 'java'
+
+version =  VERSION_NAME
+group =  GROUP
+
+compileJava {
+    sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+    targetCompatibility = rootProject.ext.targetCompatibilityVersion
+}
+
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+}
+
+// tag::dependencies[]
+dependencies {
+    compile 'javax.inject:javax.inject:1'
+    compile 'com.esri.geometry:esri-geometry-api:1.2'
+    compile 'com.google.code.gson:gson:2.6.1'
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0'
+    compile 'io.reactivex:rxjava:1.1.1'
+    compile 'com.wdtinc:mapbox-vector-tile:1.1.0'
+    compile 'no.ecc.vectortile:java-vector-tile:1.2.1'
+
+    testCompile deps.junit
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.1.2'
+    testCompile "org.mockito:mockito-all:2.+"
+
+}
+// end::dependencies[]
+
+// tag::wrapper[]
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
+// end::wrapper[]
+
+test {
+    // show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = false
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+// coverage reporting
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push-java.gradle')

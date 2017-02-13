@@ -1,0 +1,39 @@
+// Source: https://github.com/Netflix/gradle-template/blob/master/gradle/check.gradle
+subprojects {
+// Checkstyle
+apply plugin: 'checkstyle'
+checkstyle {
+    ignoreFailures = true
+    configFile = rootProject.file('config/checkstyle/google_checks.xml')
+    configProperties.checkstyleConfigDir = rootProject.file('config/checkstyle/')
+    toolVersion = "7.3"
+}
+
+// FindBugs
+apply plugin: 'findbugs'
+findbugs {
+    ignoreFailures = true
+}
+
+tasks.withType(FindBugs) {
+    ignoreFailures = true
+    reports {
+        html { enabled = false }
+        xml.enabled = !html.enabled
+    }
+}
+
+// PMD
+apply plugin: 'pmd'
+//tasks.withType(Pmd) { reports.html.enabled true }
+
+// Doesn't support Java 8
+//apply plugin: 'cobertura'
+//cobertura {
+//    sourceDirs = sourceSets.main.java.srcDirs
+//    format = 'html'
+//    includes = ['**/*.java', '**/*.groovy']
+//    excludes = []
+//}
+
+}

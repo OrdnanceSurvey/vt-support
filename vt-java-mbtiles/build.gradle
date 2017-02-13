@@ -1,0 +1,68 @@
+apply plugin: 'java'
+
+version =  VERSION_NAME
+group =  GROUP
+
+compileJava {
+    sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+    targetCompatibility = rootProject.ext.targetCompatibilityVersion
+}
+
+configurations {
+    provided
+    testiCompile.extendsFrom testCompile
+    testiRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+    testi {
+        java.srcDir('src/testi/java')
+        resources.srcDir('src/testi/resources')
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+repositories {
+    maven {
+        url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
+    }
+}
+
+// tag::dependencies[]
+dependencies {
+    compile project(':vt-java')
+
+    compile 'org.xerial:sqlite-jdbc:3.8.11.2'
+    compile 'com.google.guava:guava:19.0'
+    compile 'io.reactivex:rxjava:1.1.7'
+    compile 'com.github.davidmoten:rxjava-jdbc:0.7.2'
+    compile 'org.slf4j:slf4j-simple:1.7.21'
+    testCompile 'org.skyscreamer:jsonassert:1.3.0'
+    testCompile deps.junit
+    
+}
+// end::dependencies[]
+
+// tag::wrapper[]
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
+// end::wrapper[]
+
+// ---------------------------------------------------------------------------------------------------------------------
+// - Integration Test
+// - https://gradle.org/migrating-a-maven-build-to-gradle/
+// ---------------------------------------------------------------------------------------------------------------------
+task testi(type: Test) {
+    description = "Runs the integration tests"
+    group = "verification"
+    testClassesDir = sourceSets.testi.output.classesDir
+    classpath = sourceSets.testi.runtimeClasspath
+    mustRunAfter test
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push-java.gradle')

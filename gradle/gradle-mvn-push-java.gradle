@@ -1,0 +1,108 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+def isReleaseBuild() {
+  return VERSION_NAME.contains("SNAPSHOT") == false
+}
+
+def getRepositoryUsername() {
+  return hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : ""
+}
+
+def getRepositoryPassword() {
+  return hasProperty('SONATYPE_NEXUS_PASSWORD') ? SONATYPE_NEXUS_PASSWORD : ""
+}
+
+afterEvaluate { project ->
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        pom.groupId = GROUP
+        pom.artifactId = POM_ARTIFACT_ID
+        pom.version = VERSION_NAME
+
+        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+          authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+        }
+        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+          authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+        }
+
+        pom.project {
+          name POM_NAME
+          packaging POM_PACKAGING
+          description POM_DESCRIPTION
+          url POM_URL
+
+          scm {
+            url POM_SCM_URL
+            connection POM_SCM_CONNECTION
+            developerConnection POM_SCM_DEV_CONNECTION
+          }
+
+          licenses {
+            license {
+              name POM_LICENCE_NAME
+              url POM_LICENCE_URL
+              distribution POM_LICENCE_DIST
+            }
+          }
+
+          developers {
+            developer {
+              id POM_DEVELOPER_ID
+              name POM_DEVELOPER_NAME
+            }
+            developer {
+              id POM_DEVELOPER_ID_2
+              name POM_DEVELOPER_NAME_2
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  signing {
+    required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+  }
+
+  javadoc {
+    options.charSet = 'UTF-8'
+  }
+
+  task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+  }
+  task packageSources(type: Jar, dependsOn: 'classes') {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+  }
+
+  artifacts {
+    archives packageJavadoc
+    archives packageSources
+  }
+}
+
+/**
+ * Note: to upload the archive the developer must specify the username and password in their gradle
+ * properties file:
+ *    ~/.gradle/gradle.properties
+ *       mavenUser=admin
+ *       mavenPassword=myAdminPassword
+ *
+ * Alternative: it is possible to pass in a property to the build like the following.
+ *
+ *    ./gradle uploadArchives -PsonatypeUsername=MysticalDeployer -PsonatypePassword=password1
+ *
+ *    authentication(userName: project.hasProperty("sonatypeUsername") ?
+ *              project.sonatypeUsername : null, password: project.hasProperty("sonatypePassword") ?
+ *              project.sonatypePassword : null)
+ *
+ */
