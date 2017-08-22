@@ -103,6 +103,7 @@ class FilesystemUtil {
       @Override
       public void call(Subscriber<? super File> subscriber) {
         try {
+          // warning: depth 4 is not really walking (semantics)
           walk(path, depth, subscriber);
           if (!subscriber.isUnsubscribed()) {
             subscriber.onCompleted();
@@ -167,6 +168,10 @@ class FilesystemUtil {
       case 3:
         list = root.listFiles(file -> file.isFile() && PATTERN.matcher(file.toString()).matches());
         break;
+      case 4:
+        // consider removing out of walk
+        list = getSingleMatchOrEmpty(root);
+        break;
       default:
         throw new IllegalArgumentException("unsupported depth");
     }
@@ -190,5 +195,25 @@ class FilesystemUtil {
         }
       }
     }
+  }
+
+  /**
+   *
+   * @param fullCoordinate file path, e.g. /0/1/2
+   * @return file matching either /0/1/2.mvt or /0/1/2.pbf else empty
+   */
+  private static File[] getSingleMatchOrEmpty(File fullCoordinate) {
+    File[] possible = new File[]{
+        new File(fullCoordinate.getAbsoluteFile() + ".mvt"),
+        // should remove .pbf as external put mandates .mvt
+        new File(fullCoordinate.getAbsoluteFile() + ".pbf")
+    };
+
+    for (File f : possible) {
+      if (PATTERN.matcher(f.toString()).matches() && f.exists()) {
+        return new File[]{f};
+      }
+    }
+    return new File[]{};
   }
 }

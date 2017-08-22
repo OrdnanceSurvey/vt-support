@@ -101,6 +101,20 @@ public class FilesystemUtilTest {
   }
 
   @Test
+  public void getNoEntryTest() throws IOException {
+    // GIVEN
+    final File baseDirectory = testFolder.newFolder("testdir");
+
+    // WHEN
+    final Observable<File> result = FilesystemUtil.getTiles(baseDirectory.getPath() + "/4/0/0", 4);
+    final List<File> results = result.toList().toBlocking().single();
+
+    // THEN
+    assertNotNull(results);
+    assertEquals(0, results.size());
+  }
+
+  @Test
   public void getTilesBasedirTest() throws IOException {
     // GIVEN
     final File baseDirectory = testFolder.newFolder("testdir");
