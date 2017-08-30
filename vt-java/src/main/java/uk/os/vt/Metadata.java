@@ -384,6 +384,15 @@ public class Metadata {
 
     public Builder() {}
 
+    /**
+     * The existing Metadata to base this on.
+     *
+     * @param existing metadata
+     */
+    public Builder(Metadata existing) {
+      tileJson = existing.getTileJson();
+    }
+
     // TODO think about!!!
 
     /**

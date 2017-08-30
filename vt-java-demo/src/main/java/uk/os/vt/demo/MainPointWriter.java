@@ -16,9 +16,14 @@
 
 package uk.os.vt.demo;
 
+import com.vividsolutions.jts.geom.Geometry;
 import java.io.File;
 import java.io.IOException;
-
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import rx.functions.Func1;
+import uk.os.vt.Metadata;
 import uk.os.vt.TileLayer;
 import uk.os.vt.mbtiles.StorageImpl;
 
@@ -50,14 +55,41 @@ public class MainPointWriter {
     tileLayer.addPoint(sanFrancisco());
     tileLayer.addPoint(capeTown());
     tileLayer.addPoint(newYork());
-    tileLayer.addPoint(beijing());
-    tileLayer.addPoint(sydney());
+    tileLayer.addPoint(beijing(), beijingAttributes());
+    tileLayer.addPoint(sydney(), sydneyAttributes());
     tileLayer.addPoint(rio());
     tileLayer.addPoint(cairo());
+
+    Integer total = tileLayer
+            .getGeometry(5)
+            .filter(filterGeometriesWithEmptyAttributes())
+            .count()
+            .toBlocking()
+            .first();
+    System.out.println("Total geometries with attributes: " + total);
+
+    storage.getMetadata().map(metadata ->
+      new Metadata.Builder(metadata).addLayer(new Metadata.Layer.Builder()
+              .addField("name", "String")
+              .addField("population", "Number").build()).build())
+            .subscribe(System.out::println);
+  }
+
+  private static Func1<Geometry, Boolean> filterGeometriesWithEmptyAttributes() {
+    return geometry -> geometry.getUserData() != null
+            && geometry.getUserData() instanceof Map
+            && !((Map) geometry.getUserData()).isEmpty();
   }
 
   private static double[] beijing() {
     return new double[] {39.918751, 116.396965};
+  }
+
+  private static Map<String, Object> beijingAttributes() {
+    return new AttributeBuilder()
+            .add("name", "Beijing")
+            .add("population", 22063000)
+            .build();
   }
 
   private static double[] cairo() {
@@ -94,5 +126,26 @@ public class MainPointWriter {
 
   private static double[] sydney() {
     return new double[] {-33.858545, 151.214591};
+  }
+
+  private static Map<String, Object> sydneyAttributes() {
+    return new AttributeBuilder()
+            .add("name", "Sydney")
+            .add("population", 5029768)
+            .build();
+  }
+
+  public static class AttributeBuilder {
+
+    private LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
+
+    public AttributeBuilder add(String key, Object value) {
+      attributes.put(key, value);
+      return this;
+    }
+
+    public HashMap<String, Object> build() {
+      return attributes;
+    }
   }
 }

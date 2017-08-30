@@ -100,7 +100,8 @@ public class TileLayer {
       Metadata.Layer mvtLayer = new Metadata.Layer.Builder()
           .setId(name)
           .setMinZoom(minZoom)
-          .setMaxZoom(maxZoom).build();
+          .setMaxZoom(maxZoom)
+          .build();
       Metadata metadata = new Metadata.Builder()
           .copyMetadata(storage.generateDefault().toBlocking().value())
           .addLayer(mvtLayer)
@@ -122,13 +123,19 @@ public class TileLayer {
     addPoint(GEOMETRY_FACORY.createPoint(new Coordinate(latlon[1], latlon[0])));
   }
 
+  public void addPoint(double[] latlon, Map<String, Object> userData) {
+    Point point = GEOMETRY_FACORY.createPoint(new Coordinate(latlon[1], latlon[0]));
+    point.setUserData(userData);
+    addPoint(point);
+  }
+
   /**
    * Add a point.
    *
    * @param point defined with lat / lon values
    */
   public void addPoint(Point point) {
-    for (int z = min; z < max; z++) {
+    for (int z = min; z <= max; z++) {
       int[] coordinates = CoordinateConversion.toTileCoordinates(point, z, TILE_MEASUREMENT_SPACE);
 
       Observable<Entry> update = storage.getEntry(coordinates[0], coordinates[1], coordinates[2])
@@ -140,7 +147,10 @@ public class TileLayer {
                   MvtReader.loadMvt(new ByteArrayInputStream(existing.getVector()),
                       GEOMETRY_FACORY, new TagKeyValueMapConverter());
 
-              geometries.add(createPoint(coordinates));
+              Point p = createPoint(coordinates);
+              p.setUserData(point.getUserData());
+              geometries.add(p);
+
               byte[] newPicture = createPicture(geometries);
               return new Entry(existing.getZoomLevel(), existing.getColumn(), existing.getRow(),
                   newPicture);
@@ -152,6 +162,20 @@ public class TileLayer {
 
       storage.putEntries(update);
     }
+  }
+
+  public Observable<Geometry> getGeometry(int zoom) {
+    return storage.getEntries(zoom).flatMap(existing -> {
+      try {
+        List<Geometry> geometries =
+                MvtReader.loadMvt(new ByteArrayInputStream(existing.getVector()),
+                        GEOMETRY_FACORY, new TagKeyValueMapConverter());
+        return Observable.from(geometries);
+      } catch (IOException ioException) {
+        LOG.error("problem adding point to existing vector tile", ioException);
+        throw Exceptions.propagate(ioException);
+      }
+    });
   }
 
   private Point createPoint(int[] coordinates) {
