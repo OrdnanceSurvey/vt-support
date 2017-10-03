@@ -13,7 +13,8 @@ subprojects {
                 "mbtiles_schema_simple.sql",
                 "mbtiles_schema.sql",
                 "**/*license.txt",
-                "**/*.mvt"
+                "**/*.mvt",
+                "**/*.pbf"
                 ])
     }
 }

@@ -51,15 +51,21 @@ public final class CoordinateConversion {
    * @return the zoom, row, col, x1, y1
    */
   public static int[] toTileCoordinates(double lat, double lon, int zoom, double measurementSpace) {
+    // clamp values
+    int maxTiles = 1 << zoom;
+    int minTileIndex = 0;
+    int maxTileIndex = maxTiles - 1;
+
+    // Infinite grid
     final double xtile = (lon + 180) / 360 * (1 << zoom);
     final double ytile =
         (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)
             / 2 * (1 << zoom);
 
-    final int row = (int) Math.floor(xtile);
-    final int col = (int) Math.floor(ytile);
-    final int x1 = (int) ((xtile - row) * measurementSpace);
-    final int y1 = (int) ((ytile - col) * measurementSpace);
+    int row = Math.min(maxTileIndex, Math.max(minTileIndex, (int) Math.floor(xtile)));
+    int col = Math.min(maxTileIndex, Math.max(minTileIndex, (int) Math.floor(ytile)));
+    int x1 = (int) ((xtile - row) * measurementSpace);
+    int y1 = (int) ((ytile - col) * measurementSpace);
 
     return new int[] {zoom, row, col, x1, y1};
   }

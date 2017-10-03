@@ -32,7 +32,9 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-gson:2.0.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.0'
     compile 'io.reactivex:rxjava:1.1.1'
-    compile 'com.wdtinc:mapbox-vector-tile:1.1.0'
+    compile project(':mvt')
+    //compile 'org.slf4j:slf4j-simple:1.7.21'
+    //compile 'com.wdtinc:mapbox-vector-tile:1.1.0'
     compile 'no.ecc.vectortile:java-vector-tile:1.2.1'
 
     testCompile deps.junit

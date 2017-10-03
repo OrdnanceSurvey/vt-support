@@ -3,4 +3,7 @@ include ':vt-java-mbtiles'
 include ':vt-java-filesystem'
 include ':vt-java-demo'
 
+include(':mvt')
+project(':mvt').projectDir = new File('libs/mapbox-vector-tile-java')
+
 rootProject.name = 'vt-java-root'

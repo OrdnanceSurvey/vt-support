@@ -1,0 +1,4 @@
+[submodule "libraries/mapbox-vector-tile-java"]
+	path = libs/mapbox-vector-tile-java
+	url = https://github.com/OrdnanceSurvey/mapbox-vector-tile-java.git
+	branch = feature/layer-enhancement

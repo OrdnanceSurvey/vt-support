@@ -28,6 +28,8 @@ import com.wdtinc.mapbox_vector_tile.adapt.jts.MvtReader;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.TagKeyValueMapConverter;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.TileGeomResult;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.UserDataKeyValueMapConverter;
+import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsLayer;
+import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
 import com.wdtinc.mapbox_vector_tile.build.MvtLayerBuild;
 import com.wdtinc.mapbox_vector_tile.build.MvtLayerParams;
 import com.wdtinc.mapbox_vector_tile.build.MvtLayerProps;
@@ -123,6 +125,12 @@ public class TileLayer {
     addPoint(GEOMETRY_FACORY.createPoint(new Coordinate(latlon[1], latlon[0])));
   }
 
+  /**
+   * Add the point using the coordinates and attributes provided.
+   *
+   * @param latlon coordinate that define the point
+   * @param userData attribution for the point
+   */
   public void addPoint(double[] latlon, Map<String, Object> userData) {
     Point point = GEOMETRY_FACORY.createPoint(new Coordinate(latlon[1], latlon[0]));
     point.setUserData(userData);
@@ -143,13 +151,19 @@ public class TileLayer {
               new Entry(coordinates[0], coordinates[1], coordinates[2], createEmptyPicture()))
           .map(existing -> {
             try {
-              List<Geometry> geometries =
+              // TODO REMOVE THIS OBSOLETE CLASS - it flattens layers
+              List<Geometry> geometries = new ArrayList<>();
+
+              JtsMvt result =
                   MvtReader.loadMvt(new ByteArrayInputStream(existing.getVector()),
                       GEOMETRY_FACORY, new TagKeyValueMapConverter());
+              for (JtsLayer l : result.getLayers()) {
+                geometries.addAll(l.getGeometries());
+              }
 
-              Point p = createPoint(coordinates);
-              p.setUserData(point.getUserData());
-              geometries.add(p);
+              Point tempPoint = createPoint(coordinates);
+              tempPoint.setUserData(point.getUserData());
+              geometries.add(tempPoint);
 
               byte[] newPicture = createPicture(geometries);
               return new Entry(existing.getZoomLevel(), existing.getColumn(), existing.getRow(),
@@ -164,12 +178,22 @@ public class TileLayer {
     }
   }
 
+  /**
+   * Provide a stream of geometry for the given zoom level.
+   *
+   * @param zoom to restrict geometry to the given zoom level
+   * @return a {@link Observable} of {@link Geometry} from backing storage
+   */
   public Observable<Geometry> getGeometry(int zoom) {
     return storage.getEntries(zoom).flatMap(existing -> {
       try {
-        List<Geometry> geometries =
-                MvtReader.loadMvt(new ByteArrayInputStream(existing.getVector()),
-                        GEOMETRY_FACORY, new TagKeyValueMapConverter());
+        // TODO REMOVE THIS OBSOLETE CLASS - it flattens layers
+        List<Geometry> geometries = new ArrayList<>();
+        JtsMvt result = MvtReader.loadMvt(new ByteArrayInputStream(existing.getVector()),
+                GEOMETRY_FACORY, new TagKeyValueMapConverter());
+        for (JtsLayer l : result.getLayers()) {
+          geometries.addAll(l.getGeometries());
+        }
         return Observable.from(geometries);
       } catch (IOException ioException) {
         LOG.error("problem adding point to existing vector tile", ioException);

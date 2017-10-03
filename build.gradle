@@ -52,3 +52,11 @@ ext.deps = [
         lintapi    : 'com.android.tools.lint:lint-api:24.3.1',
         lintchecks : 'com.android.tools.lint:lint-checks:24.3.1'
 ]
+
+// exclude Javadoc from external project
+subprojects {
+    tasks.withType(Javadoc).all {
+        enabled = true
+        exclude "com/wdtinc/mapbox_vector_tile"
+    }
+}
