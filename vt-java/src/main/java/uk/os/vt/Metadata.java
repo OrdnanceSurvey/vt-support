@@ -21,7 +21,9 @@ import static uk.os.vt.JsonUtil.getIntegerIgnoreErrors;
 import static uk.os.vt.JsonUtil.getStringIgnoreErrors;
 import static uk.os.vt.JsonUtil.putIgnoreErrors;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import org.json.JSONArray;
@@ -244,6 +246,25 @@ public class Metadata {
   }
 
   /**
+   * Provides a list of vector tile layers.
+   *
+   * @return all vector layers as defined by metadata
+   */
+  public List<Layer> getLayers() {
+    if (!tileJson.has("vector_layers")) {
+      return new ArrayList<>();
+    }
+
+    List<Layer> result = new ArrayList<>();
+    JSONArray layers = tileJson.optJSONArray("vector_layers");
+    for (int i = 0; i < layers.length(); i++) {
+      JSONObject raw = layers.optJSONObject(i);
+      result.add(new Layer(raw));
+    }
+    return result;
+  }
+
+  /**
    * TODO: consider "feature_tags" and "geometry_type" properties - I have not seen that on Mapbox
    * output See: https://github.com/mapbox/tilejson-spec/issues/14#issuecomment-251776565
    */
@@ -257,6 +278,17 @@ public class Metadata {
     public static final class Builder {
 
       private JSONObject json = new JSONObject();
+
+      public Builder() {}
+
+      /**
+       * The existing Layer Metadata to base this on.
+       *
+       * @param existing metadata
+       */
+      public Builder(Metadata.Layer existing) {
+        json = existing.getJson();
+      }
 
       public Builder setJson(JSONObject value) {
         json = value;

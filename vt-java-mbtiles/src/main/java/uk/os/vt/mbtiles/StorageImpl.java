@@ -182,7 +182,10 @@ public class StorageImpl implements Storage, MetadataProvider {
 
       return Observable.<Object>just(entry.getZoomLevel(), entry.getColumn(),
           flipY(entry.getRow(), entry.getZoomLevel()), compressedMvt);
-    });
+    })
+        // source: https://github.com/davidmoten/rxjava-jdbc/pull/46/files
+        .toList()
+        .concatMap(Observable::from);
     dataSource.update(insert).parameters(params).execute();
     dataSource.commit();
   }
