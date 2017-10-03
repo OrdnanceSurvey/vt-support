@@ -14,38 +14,22 @@
  * limitations under the License.
  */
 
-package uk.os.vt.parsers;
+package uk.os.vt.fluent;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.MvtReader;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.TagKeyValueMapConverter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsLayer;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import uk.os.vt.Entry;
+public class MvtDecoder {
 
-public class VtParserWdtinc implements VtParser {
+  private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
-  private static final GeometryFactory GEOMETRY_FACORY = new GeometryFactory();
-
-  @Override
-  public List<Geometry> parse(Entry entry) throws IOException {
-    // TODO REMOVE THIS OBSOLETE CLASS - it flattens layers
-    final byte[] bytes = entry.getVector();
-    final InputStream is = new ByteArrayInputStream(bytes);
-
-    List<Geometry> allgeoms = new ArrayList<>();
-    JtsMvt result = MvtReader.loadMvt(is, GEOMETRY_FACORY, new TagKeyValueMapConverter());
-    for (JtsLayer l : result.getLayers()) {
-      allgeoms.addAll(l.getGeometries());
-    }
-
-    return allgeoms;
+  public static JtsMvt decode(byte[] bytes) throws IOException {
+    return MvtReader.loadMvt(new ByteArrayInputStream(bytes), GEOMETRY_FACTORY,
+        new TagKeyValueMapConverter());
   }
 }

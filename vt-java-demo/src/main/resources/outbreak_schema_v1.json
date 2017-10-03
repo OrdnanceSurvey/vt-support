@@ -1,0 +1,25 @@
+{
+  "tilejson": "2.2.0",
+  "format": "pbf",
+  "name": "Global Disease Outbreaks",
+  "vector_layers": [
+    {
+      "maxzoom": 7,
+      "minzoom": 0,
+      "id": "countries",
+      "fields": {
+        "name": "String name of the country",
+        "timestamp": "Number timestamp of update"
+      }
+    },
+    {
+      "maxzoom": 7,
+      "minzoom": 0,
+      "id": "outbreaks",
+      "fields": {
+        "disease_name": "String name of the disease",
+        "timestamp": "Number timestamp of first known case"
+      }
+    }
+  ]
+}
