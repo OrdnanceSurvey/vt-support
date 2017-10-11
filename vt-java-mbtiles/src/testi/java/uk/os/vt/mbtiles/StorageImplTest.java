@@ -19,6 +19,10 @@ package uk.os.vt.mbtiles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -28,10 +32,6 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import rx.Observable;
-import rx.Single;
-import rx.observers.TestSubscriber;
 
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
@@ -79,7 +79,7 @@ public class StorageImplTest {
 
     storage.putMetadata(Single.just(metadata));
 
-    final Metadata metadataResult = storage.getMetadata().toBlocking().first();
+    final Metadata metadataResult = storage.getMetadata().blockingFirst();
 
     assertNotNull(metadataResult);
 
@@ -106,10 +106,10 @@ public class StorageImplTest {
     final File file = provideNonExistentTestFileOrBlow();
     final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
 
-    final TestSubscriber<Entry> entrySubscriber = new TestSubscriber<>();
-    storage.getEntries().subscribe(entrySubscriber);
+    final TestObserver<Entry> entrySubscriber = new TestObserver<>();
+    storage.getEntries().blockingSubscribe(entrySubscriber);
     entrySubscriber.assertNoErrors();
-    entrySubscriber.assertCompleted();
+    entrySubscriber.assertComplete();
   }
 
   @Test
@@ -117,10 +117,10 @@ public class StorageImplTest {
     final File file = provideNonExistentTestFileOrBlow();
     final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
 
-    final TestSubscriber<Metadata> metadataSubscriber = new TestSubscriber<>();
-    storage.getMetadata().subscribe(metadataSubscriber);
+    final TestObserver<Metadata> metadataSubscriber = new TestObserver<>();
+    storage.getMetadata().blockingSubscribe(metadataSubscriber);
     metadataSubscriber.assertNoErrors();
-    metadataSubscriber.assertCompleted();
+    metadataSubscriber.assertComplete();
   }
 
   @Test
@@ -147,7 +147,7 @@ public class StorageImplTest {
 
     final Entry in = new Entry(zoomLevel, column, row, bytes);
     storage.putEntries(Observable.just(in));
-    final Entry out = storage.getEntries().toBlocking().first();
+    final Entry out = storage.getEntries().blockingFirst();
 
     assertEquals(in, out);
   }

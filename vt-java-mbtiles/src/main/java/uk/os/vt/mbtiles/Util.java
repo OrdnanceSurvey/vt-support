@@ -16,34 +16,23 @@
 
 package uk.os.vt.mbtiles;
 
-import com.github.davidmoten.rx.jdbc.Database;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import rx.Observable;
 
 final class Util {
 
   private static final Logger LOG = LoggerFactory.getLogger(Util.class.getSimpleName());
   private static final int STATEMENT_QUERY_TIMEOUT_IN_SECONDS = 30;
-  private static final int BUFFER_SIZE_IN_BYTES = 4096;
 
   private Util() {}
 
@@ -104,94 +93,10 @@ final class Util {
     }
   }
 
-  // TODO investigate issues with RX lib / SQLite
-  // FYI:
-  // https://github.com/davidmoten/rxjava-jdbc/commit/ce3369446ca1880afe2ec62a329db198e656d954#diff-8a68d79b6b3052d591d778f956384cf9
-  private static void modernMaker(File file) throws IOException {
-    Connection connection = null;
-    Database db = null;
-    InputStream is = null;
-    try {
-      connection = getConnection(file);
-      db = Database.from(connection);
-
-      localResourcePrintProofAllIsOk();
-
-      // TODO - replace mbtiles_schema_simple.sql with the full mbtiles script
-      is = StorageImpl.class.getResourceAsStream("/mbtiles_schema_simple.sql");
-
-      final Observable<Integer> create =
-          db.run(is, ";");
-      final Observable<Integer> count =
-          db.select("select * from map").dependsOn(create).getAs(String.class).count();
-      assertIs(0, count);
-    } catch (final SQLException ex) {
-      throw new IOException("cannot produce valid MBTiles file", ex);
-    } finally {
-      if (db != null) {
-        // contract does not mention any thrown exceptions
-        db.close();
-      }
-      if (connection != null) {
-        try {
-          connection.close();
-        } catch (final SQLException ex) {
-          LOG.error("problem closing DB connection", ex);
-        }
-      }
-      if (is != null) {
-        IOUtils.closeQuietly(is);
-      }
-    }
-  }
-
-  // TODO remove when issues ironed out
-  private static void localResourcePrintProofAllIsOk() throws IOException {
-    final Charset charset = StandardCharsets.UTF_8;
-    final String content = new String(readResoureStream("/mbtiles_schema_simple.sql"), charset);
-    final String[] lines = content.split("\\n");
-
-    System.out.println("whoop: ");
-    for (final String line : lines) {
-      System.out.println(line);
-    }
-  }
-
-  // TODO remove when issues ironed out
-  private static <T> void assertIs(T obj, Observable<T> observable) {
-    final T actual = observable.toBlocking().single();
-    if (actual.equals(obj)) {
-      LOG.info("success");
-    } else {
-      throw new IllegalStateException("problem with equality");
-    }
-  }
-
   // TODO remove when issues ironed out
   private static Connection printMetadata(Connection connection) throws SQLException {
     final DatabaseMetaData meta = connection.getMetaData();
     LOG.info("Using driver: " + meta.getDriverName());
     return connection;
-  }
-
-  // TODO remove when issues ironed out
-  private static byte[] readResoureStream(String resourcePath) throws IOException {
-    final ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-    final InputStream in = StorageImpl.class.getResourceAsStream(resourcePath);
-
-    try {
-      // Create buffer
-      final byte[] buffer = new byte[BUFFER_SIZE_IN_BYTES];
-      for (;;) {
-        final int nread = in.read(buffer);
-        if (nread <= 0) {
-          break;
-        }
-        byteArray.write(buffer, 0, nread);
-      }
-      return byteArray.toByteArray();
-    } finally {
-      IOUtils.closeQuietly(in);
-    }
   }
 }

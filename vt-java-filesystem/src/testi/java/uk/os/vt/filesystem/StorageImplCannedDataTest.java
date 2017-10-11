@@ -18,6 +18,8 @@ package uk.os.vt.filesystem;
 
 import static org.junit.Assert.assertEquals;
 
+import io.reactivex.observers.TestObserver;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -27,8 +29,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-
-import rx.observers.TestSubscriber;
 
 import uk.os.vt.Entry;
 import uk.os.vt.Storage;
@@ -144,14 +144,14 @@ public class StorageImplCannedDataTest {
   }
 
   private void verifyMaxZoomLevel(int expectedMaxZoomLevel, Storage storage) {
-    final TestSubscriber<Integer> testSubscriber = new TestSubscriber<>();
+    final TestObserver<Integer> testSubscriber = new TestObserver<>();
     storage.getMaxZoomLevel().subscribe(testSubscriber);
     testSubscriber.awaitTerminalEvent(GENEROUS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     testSubscriber.assertValue(expectedMaxZoomLevel);
   }
 
   private void verifyMinZoomLevel(int expectedMaxZoomLevel, Storage storage) {
-    final TestSubscriber<Integer> testSubscriber = new TestSubscriber<>();
+    final TestObserver<Integer> testSubscriber = new TestObserver<>();
     storage.getMinZoomLevel().subscribe(testSubscriber);
     testSubscriber.awaitTerminalEvent(GENEROUS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     testSubscriber.assertValue(expectedMaxZoomLevel);
@@ -159,7 +159,7 @@ public class StorageImplCannedDataTest {
 
   private static void verifyTotalEntries(int expectedCount, Storage storage) {
     final List<Entry> items =
-        storage.getEntries().take(5, TimeUnit.SECONDS).toList().toBlocking().first();
+        storage.getEntries().take(5, TimeUnit.SECONDS).toList().blockingGet();
 
     final int actualCount = items.size();
     assertEquals(expectedCount, actualCount);
@@ -167,7 +167,7 @@ public class StorageImplCannedDataTest {
 
   private static void verifyTotalEntries(int zoomLevel, int expectedCount, Storage storage) {
     final List<Entry> items =
-        storage.getEntries(zoomLevel).take(5, TimeUnit.SECONDS).toList().toBlocking().first();
+        storage.getEntries(zoomLevel).take(5, TimeUnit.SECONDS).toList().blockingGet();
 
     final int actualCount = items.size();
     assertEquals(expectedCount, actualCount);

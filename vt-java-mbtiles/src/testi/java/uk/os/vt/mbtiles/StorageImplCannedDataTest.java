@@ -19,6 +19,8 @@ package uk.os.vt.mbtiles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import io.reactivex.observers.TestObserver;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -30,9 +32,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import rx.observers.TestSubscriber;
-
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
 import uk.os.vt.Storage;
@@ -50,7 +49,7 @@ public class StorageImplCannedDataTest {
   @Test
   public void testMetadata() throws IOException {
     final StorageImpl storage = getStorage(SINGLE_ZOOM_LEVEL_MBTILE);
-    final Metadata metadata = storage.generateDefault().toBlocking().value();
+    final Metadata metadata = storage.generateDefault().blockingGet();
     assertNotNull(metadata);
 
     final int expectedMaxZoom = 5;
@@ -192,14 +191,14 @@ public class StorageImplCannedDataTest {
   }
 
   private void verifyMaxZoomLevel(int expectedMaxZoomLevel, Storage storage) {
-    final TestSubscriber<Integer> testSubscriber = new TestSubscriber<>();
+    final TestObserver<Integer> testSubscriber = new TestObserver<>();
     storage.getMaxZoomLevel().subscribe(testSubscriber);
     testSubscriber.awaitTerminalEvent(GENEROUS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     testSubscriber.assertValue(expectedMaxZoomLevel);
   }
 
   private void verifyMinZoomLevel(int expectedMaxZoomLevel, Storage storage) {
-    final TestSubscriber<Integer> testSubscriber = new TestSubscriber<>();
+    final TestObserver<Integer> testSubscriber = new TestObserver<>();
     storage.getMinZoomLevel().subscribe(testSubscriber);
     testSubscriber.awaitTerminalEvent(GENEROUS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     testSubscriber.assertValue(expectedMaxZoomLevel);
@@ -207,7 +206,7 @@ public class StorageImplCannedDataTest {
 
   private static void verifyTotalEntries(int expectedCount, Storage storage) {
     final List<Entry> items =
-        storage.getEntries().take(5, TimeUnit.SECONDS).toList().toBlocking().first();
+        storage.getEntries().take(5, TimeUnit.SECONDS).toList().blockingGet();
 
     final int actualCount = items.size();
     assertEquals(expectedCount, actualCount);
@@ -215,7 +214,7 @@ public class StorageImplCannedDataTest {
 
   private static void verifyTotalEntries(int zoomLevel, int expectedCount, Storage storage) {
     final List<Entry> items =
-        storage.getEntries(zoomLevel).take(5, TimeUnit.SECONDS).toList().toBlocking().first();
+        storage.getEntries(zoomLevel).take(5, TimeUnit.SECONDS).toList().blockingGet();
 
     final int actualCount = items.size();
     assertEquals(expectedCount, actualCount);

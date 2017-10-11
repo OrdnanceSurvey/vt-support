@@ -16,7 +16,7 @@
 
 package uk.os.vt.demo.geo;
 
-import static uk.os.vt.demo.geo.Util.createPoint;
+import static uk.os.vt.demo.geo.Util.createPointXy;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -40,7 +40,7 @@ public class Points {
    * @return geometry
    */
   public static Point australia() {
-    return createPoint("ISO AU", "Australia", new double[]{142.20703125, -10.919617760254685});
+    return createPointXy("ISO AU", "Australia", new double[]{142.20703125, -10.919617760254685});
   }
 
   /**
@@ -49,7 +49,7 @@ public class Points {
    * @return geometry
    */
   public static Point bermuda() {
-    return createPoint("ISO BM", "Bermuda", new double[]{-64.68681335449219, 32.407211836256685});
+    return createPointXy("ISO BM", "Bermuda", new double[]{-64.68681335449219, 32.407211836256685});
   }
 
   /**
@@ -58,7 +58,7 @@ public class Points {
    * @return geometry
    */
   public static Point congo() {
-    return createPoint("ISO CD", "Democratic Republic of Congo", new double[]{22.763671875,
+    return createPointXy("ISO CD", "Democratic Republic of Congo", new double[]{22.763671875,
         10.660607953624776});
   }
 
@@ -68,7 +68,7 @@ public class Points {
    * @return geometry
    */
   public static Point unitedKingdom() {
-    return createPoint("ISO GB", "United Kingdom", new double[]{-1.470334, 50.938121});
+    return createPointXy("ISO GB", "United Kingdom", new double[]{-1.470334, 50.938121});
   }
 
   /**
@@ -77,7 +77,7 @@ public class Points {
    * @return geometry
    */
   public static Point unitedStatesOfAmerica() {
-    return createPoint("ISO US", "United States of America", new double[]{-93.69140625,
+    return createPointXy("ISO US", "United States of America", new double[]{-93.69140625,
         49.15296965617042});
   }
 }

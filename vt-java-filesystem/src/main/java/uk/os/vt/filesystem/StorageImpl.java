@@ -18,6 +18,14 @@ package uk.os.vt.filesystem;
 
 import com.google.common.primitives.Ints;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.exceptions.Exceptions;
+import io.reactivex.functions.BiFunction;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,18 +39,14 @@ import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rx.Observable;
-import rx.Single;
-import rx.Subscription;
-import rx.exceptions.Exceptions;
-import rx.functions.Func2;
-
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
 import uk.os.vt.MetadataProvider;
 import uk.os.vt.Storage;
 
 public final class StorageImpl implements Storage, MetadataProvider {
+
+  private static final int[] UNDEFINED_ZXY = new int[]{};
 
   private final File directory;
   private final boolean gzipEnabled;
@@ -54,25 +58,25 @@ public final class StorageImpl implements Storage, MetadataProvider {
     final int[] zMinMax = getMaxMin(tileFilenames(directory));
     return FilesystemUtil
         .getTiles(new File(directory, String.valueOf(zMinMax[1])).getAbsolutePath(), 2)
-        .map(FilesystemUtil::toZxy).reduce(null, new Func2<int[], int[], int[]>() {
+        .map(FilesystemUtil::toZxy).reduce(UNDEFINED_ZXY, new BiFunction<int[], int[], int[]>() {
           @Override
-          public int[] call(int[] aa, int[] bb) {
-            return aa == null ? (bb == null ? null : bb)
+          public int[] apply(int[] aa, int[] bb) throws Exception {
+            return aa == UNDEFINED_ZXY ? (bb == UNDEFINED_ZXY ? UNDEFINED_ZXY : bb)
                 : new int[] {Math.max(aa[0], bb[0]), Math.max(aa[1], bb[1]),
-                    Math.max(aa[2], bb[2])};
+                Math.max(aa[2], bb[2])};
           }
         }).map(zxy -> {
-          if (zxy == null) {
+          if (zxy == UNDEFINED_ZXY) {
             return new Metadata.Builder().build();
           }
           // TODO should be able to translate tile coordinates to
           // bounds shortly!
           return new Metadata.Builder().setMinZoom(zMinMax[0]).setMaxZoom(zMinMax[1]).build();
-        }).toSingle();
+        }).toObservable().singleOrError();
   }
 
   @Override
-  public Subscription putMetadata(Single<Metadata> metadata) {
+  public Disposable putMetadata(Single<Metadata> metadata) {
     return metadata.subscribe(m -> {
       final File file = new File(directory, "config.json");
       try {
@@ -103,8 +107,7 @@ public final class StorageImpl implements Storage, MetadataProvider {
       try {
         return FilesystemUtil.toEntry(file);
       } catch (final IOException ex) {
-        Exceptions.propagate(ex);
-        return null;
+        throw Exceptions.propagate(ex);
       }
     });
   }
@@ -151,6 +154,7 @@ public final class StorageImpl implements Storage, MetadataProvider {
   }
 
   @Override
+  @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
   public void putEntries(Observable<Entry> entries) {
     entries.subscribe(entry -> {
       try {
