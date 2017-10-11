@@ -16,6 +16,11 @@
 
 package uk.os.vt.filesystem;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.Observable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,9 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-
-import rx.Observable;
-import rx.Subscriber;
 
 import uk.os.vt.Entry;
 import uk.os.vt.common.CompressUtil;
@@ -99,22 +101,22 @@ class FilesystemUtil {
     // Essentially lots of way to skin this cat - e.g. onBackpressureBlock /
     // reactive pull
 
-    return Observable.create(new Observable.OnSubscribe<File>() {
+    return Flowable.create(new FlowableOnSubscribe<File>() {
       @Override
-      public void call(Subscriber<? super File> subscriber) {
+      public void subscribe(FlowableEmitter<File> subscriber) throws Exception {
         try {
           // warning: depth 4 is not really walking (semantics)
           walk(path, depth, subscriber);
-          if (!subscriber.isUnsubscribed()) {
-            subscriber.onCompleted();
+          if (!subscriber.isCancelled()) {
+            subscriber.onComplete();
           }
         } catch (final Exception ex) {
-          if (!subscriber.isUnsubscribed()) {
+          if (!subscriber.isCancelled()) {
             subscriber.onError(ex);
           }
         }
       }
-    });
+    }, BackpressureStrategy.BUFFER).toObservable();
   }
 
   public static Observable<File> getTiles(String path) {
@@ -124,15 +126,21 @@ class FilesystemUtil {
     // Essentially lots of way to skin this cat - e.g. onBackpressureBlock /
     // reactive pull
 
-    return Observable.create(new Observable.OnSubscribe<File>() {
+    return Flowable.create(new FlowableOnSubscribe<File>() {
       @Override
-      public void call(Subscriber<? super File> subscriber) {
-        walk(path, 1, subscriber);
-        if (!subscriber.isUnsubscribed()) {
-          subscriber.onCompleted();
+      public void subscribe(FlowableEmitter<File> subscriber) throws Exception {
+        try {
+          walk(path, 1, subscriber);
+          if (!subscriber.isCancelled()) {
+            subscriber.onComplete();
+          }
+        } catch (final Exception ex) {
+          if (!subscriber.isCancelled()) {
+            subscriber.onError(ex);
+          }
         }
       }
-    });
+    }, BackpressureStrategy.BUFFER).toObservable();
   }
 
   public static int[] toZxy(File file) {
@@ -155,7 +163,7 @@ class FilesystemUtil {
    * @param depth offset, where 1 == data directory, 2 == zoom directory, 3 == row, 4 == column
    * @param subscriber to provide feedback and terminate according to
    */
-  private static void walk(String path, int depth, Subscriber<? super File> subscriber) {
+  private static void walk(String path, int depth, FlowableEmitter<File> subscriber) {
 
     final File root = new File(path);
 
@@ -181,7 +189,7 @@ class FilesystemUtil {
     }
 
     for (final File f : list) {
-      if (subscriber.isUnsubscribed()) {
+      if (subscriber.isCancelled()) {
         return;
       }
 
@@ -189,7 +197,7 @@ class FilesystemUtil {
         walk(f.getAbsolutePath(), depth + 1, subscriber);
       } else {
         // move close as possible - but no guarantee!
-        final boolean isSubscribed = !subscriber.isUnsubscribed();
+        final boolean isSubscribed = !subscriber.isCancelled();
         if (isSubscribed) {
           subscriber.onNext(f);
         }

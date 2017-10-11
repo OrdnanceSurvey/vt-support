@@ -16,39 +16,43 @@
 
 package uk.os.vt.mbtiles;
 
-import com.github.davidmoten.rx.jdbc.Database;
-import com.github.davidmoten.rx.jdbc.QuerySelect;
-import com.github.davidmoten.rx.jdbc.QueryUpdate;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.exceptions.Exceptions;
+import io.reactivex.functions.Function;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import javax.annotation.Nonnull;
+import org.davidmoten.rx.jdbc.ConnectionProvider;
+import org.davidmoten.rx.jdbc.Database;
+import org.davidmoten.rx.jdbc.ResultSetMapper;
+import org.davidmoten.rx.jdbc.SelectBuilder;
+import org.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import rx.Observable;
-import rx.Single;
-import rx.Subscription;
-import rx.exceptions.Exceptions;
-import rx.functions.Func1;
-
 import uk.os.vt.Entry;
 import uk.os.vt.JsonUtil;
 import uk.os.vt.Metadata;
@@ -99,37 +103,27 @@ public class StorageImpl implements Storage, MetadataProvider {
     }
   }
 
-
   private static final Logger LOG = LoggerFactory.getLogger(StorageImpl.class.getSimpleName());
 
   private final Database dataSource;
-  private final Connection connection;
   private final boolean isError;
 
-  // cache
-  private Observable<VectorTileConfig> configObservable;
-
   private StorageImpl(File file) {
-    Connection connection = null;
     Database datasource = null;
+    boolean isError = true;
     try {
-      connection = getConnection(file);
-      datasource = Database.from(connection);
+      datasource = Database.fromBlocking(connectionProvider("jdbc:sqlite:"
+          + file.getAbsolutePath()));
+      isError = false;
     } catch (final Exception ex) {
       LOG.error("problem establishing a connection", ex);
     }
     this.dataSource = datasource;
-    this.connection = connection;
-    isError = dataSource == null || connection == null;
+    this.isError = isError;
   }
 
   @Override
   public void close() throws Exception {
-    final boolean isConnection = connection != null;
-    if (isConnection) {
-      connection.close();
-    }
-
     final boolean isDatabase = dataSource != null;
     if (isDatabase) {
       dataSource.close();
@@ -141,19 +135,19 @@ public class StorageImpl implements Storage, MetadataProvider {
     return get(dataSource
         .select("SELECT zoom_level, tile_column, tile_row, tile_data " + "FROM tiles "
             + "WHERE zoom_level = ? " + "AND tile_column = ? " + "AND tile_row = ?")
-        .parameter(zoom).parameter(col).parameter(flipY(row, zoom)));
+        .parameters(zoom, col, flipY(row, zoom)));
   }
 
   @Override
   public Observable<Entry> getEntries() {
-    return get(
-        dataSource.select("SELECT zoom_level, tile_column, tile_row, tile_data " + "FROM tiles"));
+    return get(dataSource.select("SELECT zoom_level, tile_column, tile_row, tile_data FROM tiles"));
   }
 
   @Override
   public Observable<Entry> getEntries(int zoom) {
     return get(dataSource.select("SELECT zoom_level, tile_column, tile_row, tile_data "
-        + "FROM tiles " + "WHERE zoom_level = ?").parameter(zoom));
+        + "FROM tiles "
+        + "WHERE zoom_level = ?").parameter(zoom));
   }
 
   @Override
@@ -185,42 +179,20 @@ public class StorageImpl implements Storage, MetadataProvider {
     })
         // source: https://github.com/davidmoten/rxjava-jdbc/pull/46/files
         .toList()
-        .concatMap(Observable::from);
-    dataSource.update(insert).parameters(params).execute();
-    dataSource.commit();
+        .flattenAsObservable(objects -> objects);
+
+    // TODO update when upstream is enhanced
+    dataSource.update(insert)
+        .parameterStream(params.toFlowable(BackpressureStrategy.BUFFER))
+        .counts()
+        .test() // TODO remove hack
+        .awaitDone(5, TimeUnit.SECONDS)
+        .assertComplete();
   }
 
   @Override
   public Single<Metadata> generateDefault() {
-    return Single.zip(queryMetadata(), queryConfig().toSingle(), (metadata, config) -> {
-      final JSONObject tileJson = new JSONObject();
-      if (metadata.containsKey("json")) {
-        try {
-          final JSONObject json = new JSONObject(metadata.get("json"));
-          tileJson.put("vector_layers", json.getJSONArray("vector_layers"));
-        } catch (final JSONException ex) {
-          LOG.error("problem generating JSON for metadata", ex);
-        }
-      }
-
-      try {
-        addMetadataToTileJson(metadata, tileJson);
-      } catch (final JSONException ex) {
-        LOG.error("problem generating metadata", ex);
-      }
-
-      final Metadata.Builder builder = new Metadata.Builder();
-      builder.setMinZoom(config.getMinZoom());
-      builder.setMaxZoom(config.getMaxZoom());
-      builder.setTileJson(tileJson);
-      return builder.build();
-    }).onErrorReturn(new Func1<Throwable, Metadata>() {
-      @Override
-      public Metadata call(Throwable throwable) {
-        // TODO REMOVE THIS SHOCKING HACK!
-        return new Metadata.Builder().build();
-      }
-    });
+    return MetadataConcern.generateDefault(dataSource);
   }
 
   @Override
@@ -290,18 +262,16 @@ public class StorageImpl implements Storage, MetadataProvider {
         LOG.error("problem", ex);
       }
       return metadata.build();
-    });
+    }).toObservable();
   }
 
   @Override
-  public Subscription putMetadata(Single<Metadata> metadata) {
+  public Disposable putMetadata(Single<Metadata> metadata) {
     return metadata.subscribe(m -> {
       final String insert = "INSERT OR REPLACE INTO metadata (name, value) VALUES (?, ?);";
-
       final JSONObject tilejson = m.getTileJson();
       final JSONArray fieldNames = tilejson.names();
-
-      final List<Observable<Object>> rows = new ArrayList<>();
+      final List<Object> params = new ArrayList<>();
 
       for (int i = 0; i < fieldNames.length(); i++) {
         final String key = JsonUtil.getStringIgnoreErrors(i, fieldNames, "");
@@ -317,10 +287,10 @@ public class StorageImpl implements Storage, MetadataProvider {
             final Matcher matcher = pattern.matcher(value);
             if (matcher.matches()) {
               final String toCommit = matcher.group(1);
-              rows.add(Observable.<Object>just(key, toCommit));
+              Collections.addAll(params, key, toCommit);
             }
           } else if (value != null && !value.isEmpty()) {
-            rows.add(Observable.<Object>just(key, value));
+            Collections.addAll(params, key, value);
           }
         } catch (final JSONException ex) {
           LOG.error("problem", ex);
@@ -338,152 +308,156 @@ public class StorageImpl implements Storage, MetadataProvider {
         }
       }
 
-      rows.add(Observable.<Object>just("format", "pbf"));
-      rows.add(Observable.<Object>just("version", "1.1"));
-      rows.add(Observable.<Object>just("type", "overlay"));
-      rows.add(Observable.just("json", vectorLayerJson));
+      Collections.addAll(params, "format", "pbf");
+      Collections.addAll(params, "version", "1.1");
+      Collections.addAll(params, "type", "overlay");
+      Collections.addAll(params, "json", vectorLayerJson);
 
-      QueryUpdate.Builder builder = dataSource.update(insert);
-      for (final Observable<Object> row : rows) {
-        builder = builder.parameters(row);
-      }
-      builder.execute();
-
-      dataSource.commit();
+      // TODO update when upstream is enhanced
+      dataSource.update(insert)
+          .parameters(params.toArray())
+          .counts()
+          .test()
+          .awaitDone(5, TimeUnit.SECONDS) // TODO remove hack
+          .assertComplete();
     });
   }
 
-  private static void addMetadataToTileJson(Map<String, String> metadata, JSONObject tileJson)
-      throws JSONException {
-    for (final Map.Entry<String, String> entry : metadata.entrySet()) {
-      String key = entry.getKey();
-      if (key.equals("version") || key.equals("json")) {
-        continue;
-      } else if (key.equals("bounds") || key.equals("center")) {
-        tileJson.put(key, new JSONArray("[" + entry.getValue() + "]"));
-      } else {
-        tileJson.put(key, entry.getValue());
+  private static ConnectionProvider connectionProvider(String url) {
+    return new ConnectionProvider() {
+
+      @Override
+      public Connection get() {
+        try {
+          return DriverManager.getConnection(url);
+        } catch (SQLException exception) {
+          throw new SQLRuntimeException(exception);
+        }
       }
-    }
+
+      @Override
+      public void close() {
+        //
+      }
+    };
   }
 
-  private synchronized Single<HashMap<String, String>> queryMetadata() {
-    final URL url = Resources.getResource("metadata_key_value.sql");
-    String query;
-    try {
-      query = Resources.toString(url, Charsets.UTF_8);
-    } catch (final IOException ex) {
-      return Single.error(ex);
-    }
-    return dataSource.select(query).get(rs -> {
-      final HashMap<String, String> metadata = new LinkedHashMap<>();
-
-      while (rs.getRow() != 0) {
-        metadata.put(rs.getString("name"), rs.getString("value"));
-        rs.next();
-      }
-      return metadata;
-    }).toSingle();
-  }
-
-  // TODO remove
-  private synchronized Observable<VectorTileConfig> queryConfig() {
-    final boolean isPendingQuery = configObservable != null;
-    if (!isPendingQuery) {
-      final URL url = Resources.getResource("metadata_raw.sql");
-      String query;
-      try {
-        query = Resources.toString(url, Charsets.UTF_8);
-      } catch (final IOException ex) {
-        return Observable.error(ex);
-      }
-      configObservable = dataSource.select(query)
-          .get(rs -> new VectorTileConfig(rs.getInt("min_zoom"), rs.getInt("max_zoom"),
-              rs.getInt("max_zoom_minx"), rs.getInt("max_zoom_miny"), rs.getInt("max_zoom_maxx"),
-              rs.getInt("max_zoom_maxy")))
-          .replay().autoConnect();
-    }
-    return configObservable;
-  }
-
-  /**
-   * Get an Entry observable.
-   *
-   * @param builder to describe the builder
-   * @return all entries for the given builder
-   */
-  private Observable<Entry> get(QuerySelect.Builder builder) {
+  private Observable<Entry> get(SelectBuilder builder) {
     if (isError) {
       return Observable.empty();
     } else {
-      return builder.get(rs -> {
-        byte[] uncompressed;
-        try {
-          final byte[] compressedTileData = rs.getBytes("tile_data");
-          uncompressed = CompressUtil.getUncompressedFromGzip(compressedTileData);
-        } catch (final IOException ex) {
-          throw Exceptions.propagate(ex);
+      return builder.get(new ResultSetMapper<Entry>() {
+        @Override
+        public Entry apply(@Nonnull ResultSet rs) throws SQLException {
+          byte[] uncompressed;
+          try {
+            final byte[] compressedTileData = rs.getBytes("tile_data");
+            uncompressed = CompressUtil.getUncompressedFromGzip(compressedTileData);
+          } catch (final IOException ex) {
+            throw Exceptions.propagate(ex);
+          }
+          return new Entry(rs.getInt("zoom_level"), rs.getInt("tile_column"),
+              flipY(rs.getInt("tile_row"), rs.getInt("zoom_level")), uncompressed);
         }
-        return new Entry(rs.getInt("zoom_level"), rs.getInt("tile_column"),
-            flipY(rs.getInt("tile_row"), rs.getInt("zoom_level")), uncompressed);
-      });
+      }).toObservable();
     }
-  }
-
-  private static Connection getConnection(File file) throws SQLException {
-    return getConnection(file.getAbsolutePath());
-  }
-
-  private static Connection getConnection(String fileLocation) throws SQLException {
-    LOG.info("DB file location " + fileLocation);
-    return DriverManager.getConnection("jdbc:sqlite:" + fileLocation);
   }
 
   private static int flipY(int row, int zoom) {
     return (int) (Math.pow(2, zoom) - row - 1);
   }
 
-  private static class VectorTileConfig {
+  private static class MetadataConcern {
 
-    private final int maxZoom;
-    private final int minZoom;
-    private final int maxZoomMinX;
-    private final int maxZoomMinY;
-    private final int maxZoomMaxX;
-    private final int maxZoomMaxY;
+    private static synchronized Single<HashMap<String, String>> queryMetadata(Database dataSource) {
+      final URL url = Resources.getResource("metadata_key_value.sql");
+      String query;
+      try {
+        query = Resources.toString(url, Charsets.UTF_8);
+      } catch (final IOException ex) {
+        return Single.error(ex);
+      }
+      return dataSource.select(query).get(new ResultSetMapper<HashMap<String, String>>() {
+        @Override
+        public HashMap<String, String> apply(@Nonnull ResultSet rs) throws SQLException {
+          final HashMap<String, String> metadata = new LinkedHashMap<>();
 
-    public VectorTileConfig(int minZoom, int maxZoom, int maxZoomMinX, int maxZoomMinY,
-        int maxZoomMaxX, int maxZoomMaxY) {
-      this.minZoom = minZoom;
-      this.maxZoom = maxZoom;
-      this.maxZoomMaxX = maxZoomMaxX;
-      this.maxZoomMaxY = maxZoomMaxY;
-      this.maxZoomMinX = maxZoomMinX;
-      this.maxZoomMinY = maxZoomMinY;
+          while (rs.getRow() != 0) {
+            metadata.put(rs.getString("name"), rs.getString("value"));
+            rs.next();
+          }
+          return metadata;
+        }
+      }).singleOrError();
     }
 
-    double[] getExtentAsLatLon() {
-      // TODO verify
-      LOG.info("WARNING - check this!!!"); // TODO
-      return new double[] {tile2lat(maxZoomMinY, maxZoom), tile2lat(maxZoomMaxY + 1, maxZoom),
-          tile2lon(maxZoomMinX, maxZoom), tile2lon(maxZoomMaxX + 1, maxZoom)};
+    private static Single<Metadata> generateDefault(Database dataSource) {
+      return queryMetadata(dataSource).map(new Function<HashMap<String, String>, Metadata>() {
+        @Override
+        public Metadata apply(HashMap<String, String> metadata) throws Exception {
+
+          final JSONObject tileJson = new JSONObject();
+          if (metadata.containsKey("json")) {
+            try {
+              final JSONObject json = new JSONObject(metadata.get("json"));
+              tileJson.put("vector_layers", json.getJSONArray("vector_layers"));
+            } catch (final JSONException ex) {
+              LOG.error("problem generating JSON for metadata", ex);
+            }
+          }
+
+          try {
+            addMetadataToTileJson(metadata, tileJson);
+          } catch (final JSONException ex) {
+            LOG.error("problem generating metadata", ex);
+          }
+
+          final Metadata.Builder builder = new Metadata.Builder();
+          builder.setTileJson(tileJson);
+          return builder.build();
+
+        }
+      }).onErrorReturn(new Function<Throwable, Metadata>() {
+        @Override
+        public Metadata apply(Throwable throwable) throws Exception {
+          // TODO REMOVE THIS SHOCKING HACK!
+          return new Metadata.Builder().build();
+        }
+      });
     }
 
-    int getMaxZoom() {
-      return maxZoom;
-    }
 
-    int getMinZoom() {
-      return minZoom;
-    }
-
-    double tile2lon(int col, int zoom) {
-      return col / Math.pow(2.0, zoom) * 360.0 - 180;
-    }
-
-    double tile2lat(int row, int zoom) {
-      final double n = Math.PI - (2.0 * Math.PI * row) / Math.pow(2.0, zoom);
-      return Math.toDegrees(Math.atan(Math.sinh(n)));
+    private static void addMetadataToTileJson(Map<String, String> metadata, JSONObject tileJson)
+        throws JSONException {
+      for (final Map.Entry<String, String> entry : metadata.entrySet()) {
+        String key = entry.getKey();
+        if (key.equals("version") || key.equals("json")) {
+          continue;
+        } else if (key.equals("bounds") || key.equals("center")) {
+          tileJson.put(key, new JSONArray("[" + entry.getValue() + "]"));
+        } else {
+          tileJson.put(key, entry.getValue());
+        }
+      }
     }
   }
+
+  private synchronized Observable<VectorTileConfig> queryConfig() {
+    return queryConfigFlowable().toObservable();
+  }
+
+  private synchronized Flowable<VectorTileConfig> queryConfigFlowable() {
+    final URL url = Resources.getResource("metadata_raw.sql");
+    String query;
+    try {
+      query = Resources.toString(url, Charsets.UTF_8);
+    } catch (final IOException ex) {
+      return Flowable.error(ex);
+    }
+    return dataSource.select(query)
+        .get(rs -> new VectorTileConfig(rs.getInt("min_zoom"), rs.getInt("max_zoom"),
+            rs.getInt("max_zoom_minx"), rs.getInt("max_zoom_miny"), rs.getInt("max_zoom_maxx"),
+            rs.getInt("max_zoom_maxy")));
+  }
+
 }

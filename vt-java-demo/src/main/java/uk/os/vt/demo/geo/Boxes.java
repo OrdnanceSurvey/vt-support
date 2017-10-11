@@ -16,7 +16,7 @@
 
 package uk.os.vt.demo.geo;
 
-import static uk.os.vt.demo.geo.Util.createPolygon;
+import static uk.os.vt.demo.geo.Util.createPolygonXy;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -41,7 +41,7 @@ public class Boxes {
    * @return geometry
    */
   public static Polygon createUpperLeftExtremeZ4() {
-    return createPolygon("ISO BOX", "Upper Left Box", new double[][]{
+    return createPolygonXy("ISO BOX", "Upper Left Box", new double[][]{
         {-180, 85.05112877980659},
         {-157.5, 85.05112877980659},
         {-157.5, 82.67628497834903},
@@ -56,7 +56,7 @@ public class Boxes {
    * @return geometry
    */
   public static Polygon createUpperRightExtremeZ4() {
-    return createPolygon("ISO BOX", "Upper Right Box", new double[][]{
+    return createPolygonXy("ISO BOX", "Upper Right Box", new double[][]{
         {180, 85.05112877980659},
         {157.5, 85.05112877980659},
         {157.5, 82.67628497834903},
@@ -71,7 +71,7 @@ public class Boxes {
    * @return geometry
    */
   public static Polygon createLowerLeftExtremeZ4() {
-    return createPolygon("ISO BOX", "Upper Left Box", new double[][]{
+    return createPolygonXy("ISO BOX", "Upper Left Box", new double[][]{
         {-180, -85.05112877980659},
         {-157.5, -85.05112877980659},
         {-157.5, -82.67628497834903},
@@ -86,7 +86,7 @@ public class Boxes {
    * @return geometry
    */
   public static Polygon createLowerRightExtremeZ4() {
-    return createPolygon("ISO BOX", "Upper Right Box", new double[][]{
+    return createPolygonXy("ISO BOX", "Upper Right Box", new double[][]{
         {180, -85.05112877980659},
         {157.5, -85.05112877980659},
         {157.5, -82.67628497834903},

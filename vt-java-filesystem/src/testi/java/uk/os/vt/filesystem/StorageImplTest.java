@@ -19,6 +19,10 @@ package uk.os.vt.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -31,10 +35,6 @@ import org.json.JSONException;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import rx.Observable;
-import rx.Single;
-import rx.observers.TestSubscriber;
 
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
@@ -55,14 +55,14 @@ public class StorageImplTest {
     final StorageImpl storage = new StorageImpl.Builder(file).build();
 
     final Metadata expected = new Metadata.Builder().build();
-    final Metadata actual = storage.generateDefault().toBlocking().value();
+    final Metadata actual = storage.generateDefault().blockingGet();
     JSONAssert.assertEquals(expected.getTileJson(), actual.getTileJson(), false);
   }
 
   @Test
   public void testGenerateDefaultOnCannedSingleLevel() throws IOException {
     final StorageImpl storage = getStorage(SINGLE_ZOOM_LEVEL_FILESYSTEM);
-    final Metadata metaData = storage.generateDefault().toBlocking().value();
+    final Metadata metaData = storage.generateDefault().blockingGet();
 
     final int actualdMax = metaData.getMaxZoom();
     final int expectedMax = 5;
@@ -76,7 +76,7 @@ public class StorageImplTest {
   @Test
   public void testGenerateDefaultOnCannedMultiLevel() throws IOException {
     final StorageImpl storage = getStorage(MULTIPLE_ZOOM_LEVEL_FILESYSTEM);
-    final Metadata metaData = storage.generateDefault().toBlocking().value();
+    final Metadata metaData = storage.generateDefault().blockingGet();
 
     final int actualdMax = metaData.getMaxZoom();
     final int expectedMax = 4;
@@ -116,13 +116,13 @@ public class StorageImplTest {
       throw new IOException("cannot create directory");
     }
     final StorageImpl storage = new StorageImpl.Builder(file).build();
-    Metadata metaData = storage.generateDefault().toBlocking().value();
+    Metadata metaData = storage.generateDefault().blockingGet();
     metaData = new Metadata.Builder().copyMetadata(metaData)
         .setAttribution(attribution).setString(key, value).build();
 
     storage.putMetadata(Single.just(metaData));
     Thread.sleep(1000);
-    metaData = storage.getMetadata().toBlocking().first();
+    metaData = storage.getMetadata().blockingFirst();
     assertNotNull(metaData);
 
     String actual = metaData.getAttribution();
@@ -151,15 +151,15 @@ public class StorageImplTest {
     final File file = provideNonExistentTestDirectoryOrBlow();
     final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
 
-    final TestSubscriber<Entry> entrySubscriber = new TestSubscriber<>();
-    storage.getEntries().subscribe(entrySubscriber);
+    final TestObserver<Entry> entrySubscriber = new TestObserver<>();
+    storage.getEntries().blockingSubscribe(entrySubscriber);
     entrySubscriber.assertNoErrors();
-    entrySubscriber.assertCompleted();
+    entrySubscriber.assertComplete();
 
-    final TestSubscriber<Metadata> metadataSubscriber = new TestSubscriber<>();
+    final TestObserver<Metadata> metadataSubscriber = new TestObserver<>();
     storage.getMetadata().subscribe(metadataSubscriber);
     metadataSubscriber.assertNoErrors();
-    metadataSubscriber.assertCompleted();
+    metadataSubscriber.assertComplete();
   }
 
   @Test
@@ -167,10 +167,10 @@ public class StorageImplTest {
     final File file = provideNonExistentTestDirectoryOrBlow();
     final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
 
-    final TestSubscriber<Entry> entrySubscriber = new TestSubscriber<>();
+    final TestObserver<Entry> entrySubscriber = new TestObserver<>();
     storage.getEntries(22).subscribe(entrySubscriber);
     entrySubscriber.assertNoErrors();
-    entrySubscriber.assertCompleted();
+    entrySubscriber.assertComplete();
   }
 
   @Test
@@ -178,10 +178,10 @@ public class StorageImplTest {
     final File file = provideNonExistentTestDirectoryOrBlow();
     final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
 
-    final TestSubscriber<Integer> entrySubscriber = new TestSubscriber<>();
+    final TestObserver<Integer> entrySubscriber = new TestObserver<>();
     storage.getMaxZoomLevel().subscribe(entrySubscriber);
     entrySubscriber.assertNoErrors();
-    entrySubscriber.assertCompleted();
+    entrySubscriber.assertComplete();
   }
 
   @Test
@@ -196,7 +196,7 @@ public class StorageImplTest {
 
     final Entry in = new Entry(zoomLevel, column, row, bytes);
     storage.putEntries(Observable.just(in));
-    final Entry out = storage.getEntries().toBlocking().first();
+    final Entry out = storage.getEntries().blockingFirst();
 
     assertEquals(in, out);
   }

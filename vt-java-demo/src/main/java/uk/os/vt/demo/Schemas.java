@@ -30,28 +30,37 @@ public class Schemas {
 
   private static final Logger LOG = LoggerFactory.getLogger(Schemas.class.getSimpleName());
 
-  public static class OutbreakSchemaV1 {
+  public static class CitySchemaV1 {
 
-    private static final Metadata metadata;
-
-    static {
-      final URL url = Resources.getResource("outbreak_schema_v1.json");
-      Metadata inflated;
-      try {
-        String schemaString = Resources.toString(url, Charsets.UTF_8);
-        inflated = new Metadata.Builder().setTileJson(new JSONObject(schemaString)).build();
-      } catch (final IOException ex) {
-        LOG.error("problem inflating local schema", ex);
-        inflated = new Metadata.Builder().build();
-      } catch (JSONException je) {
-        LOG.error("problem inflating JSON", je);
-        inflated = new Metadata.Builder().build();
-      }
-      metadata = inflated;
-    }
+    private static final Metadata metadata = inflate("city_schema_v1.json");
 
     public static Metadata get() {
       return metadata;
     }
+  }
+
+  public static class OutbreakSchemaV1 {
+
+    private static final Metadata metadata = inflate("outbreak_schema_v1.json");
+
+    public static Metadata get() {
+      return metadata;
+    }
+  }
+
+  private static Metadata inflate(String resource) {
+    final URL url = Resources.getResource(resource);
+    Metadata inflated;
+    try {
+      String schemaString = Resources.toString(url, Charsets.UTF_8);
+      inflated = new Metadata.Builder().setTileJson(new JSONObject(schemaString)).build();
+    } catch (final IOException ex) {
+      LOG.error("problem inflating local schema", ex);
+      inflated = new Metadata.Builder().build();
+    } catch (JSONException je) {
+      LOG.error("problem inflating JSON", je);
+      inflated = new Metadata.Builder().build();
+    }
+    return inflated;
   }
 }

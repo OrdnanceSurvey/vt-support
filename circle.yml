@@ -12,7 +12,7 @@ machine:
 
 test:
    override:
-      - ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest 
+      - ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest checkStyleMain checkStyleTest checkStyleTestI
 
 deployment:
   master:

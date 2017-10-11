@@ -21,18 +21,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import io.reactivex.Observable;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import rx.Observable;
 
 import uk.os.vt.Entry;
 
@@ -107,7 +103,7 @@ public class FilesystemUtilTest {
 
     // WHEN
     final Observable<File> result = FilesystemUtil.getTiles(baseDirectory.getPath() + "/4/0/0", 4);
-    final List<File> results = result.toList().toBlocking().single();
+    final List<File> results = result.toList().blockingGet();
 
     // THEN
     assertNotNull(results);
@@ -130,7 +126,7 @@ public class FilesystemUtilTest {
 
     // WHEN
     final Observable<File> result = FilesystemUtil.getTiles(baseDirectory.getPath());
-    final List<File> results = result.toList().toBlocking().single();
+    final List<File> results = result.toList().blockingGet();
     System.out.println("results.get(0): " + results.get(0));
 
     // THEN
@@ -155,7 +151,7 @@ public class FilesystemUtilTest {
 
     // WHEN
     final Observable<File> result = FilesystemUtil.getTiles(baseDirectory.getPath() + "/4", 2);
-    final List<File> results = result.toList().toBlocking().single();
+    final List<File> results = result.toList().blockingGet();
     System.out.println("results.get(0): " + results.get(0));
 
     // THEN

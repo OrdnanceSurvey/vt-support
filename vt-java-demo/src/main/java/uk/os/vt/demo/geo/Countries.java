@@ -16,7 +16,7 @@
 
 package uk.os.vt.demo.geo;
 
-import static uk.os.vt.demo.geo.Util.createPolygon;
+import static uk.os.vt.demo.geo.Util.createPolygonXy;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -40,7 +40,7 @@ public class Countries {
    * @return geometry
    */
   public static Polygon australia() {
-    return createPolygon("ISO AU", "Australia", new double[][]{
+    return createPolygonXy("ISO AU", "Australia", new double[][]{
         {142.20703125, -10.919617760254685},
         {141.416015625, -12.64033830684679},
         {141.240234375, -16.55196172197251},
@@ -97,7 +97,7 @@ public class Countries {
    * @return geometry
    */
   public static Polygon bermuda() {
-    return createPolygon("ISO BM", "Bermuda", new double[][]{
+    return createPolygonXy("ISO BM", "Bermuda", new double[][]{
         {-64.68681335449219, 32.407211836256685},
         {-64.93263244628906, 32.28423019803735},
         {-64.87907409667969, 32.204086355917944},
@@ -112,7 +112,7 @@ public class Countries {
    * @return geometry
    */
   public static Polygon congo() {
-    return createPolygon("ISO CD", "Democratic Republic of Congo", new double[][]{
+    return createPolygonXy("ISO CD", "Democratic Republic of Congo", new double[][]{
         {22.763671875, 10.660607953624776},
         {13.271484375, 2.28455066023697},
         {20.654296875, -15.029685756555674},
@@ -128,7 +128,7 @@ public class Countries {
    * @return geometry
    */
   public static Polygon unitedKingdom() {
-    return createPolygon("ISO GB", "United Kingdom", new double[][]{
+    return createPolygonXy("ISO GB", "United Kingdom", new double[][]{
         {-3.779296875, 58.90464570302001},
         {-7.207031249999999, 58.53959476664049},
         {-5.625, 50.064191736659104},
@@ -143,7 +143,7 @@ public class Countries {
    * @return geometry
    */
   public static Polygon unitedStatesOfAmerica() {
-    return createPolygon("ISO US", "United States of America", new double[][]{
+    return createPolygonXy("ISO US", "United States of America", new double[][]{
         {-93.69140625, 49.15296965617042},
         {-124.45312499999999, 49.26780455063753},
         {-124.8046875, 40.97989806962013},

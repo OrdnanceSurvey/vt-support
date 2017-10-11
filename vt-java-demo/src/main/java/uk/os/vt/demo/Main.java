@@ -62,7 +62,7 @@ public class Main {
 
     // Print the parse geometries
     final Storage storage = StorageUtil.getStorage(file);
-    storage.getEntries().toBlocking().subscribe(entry -> {
+    storage.getEntries().blockingForEach(entry -> {
       try {
         PrintUtil.printEntry(entry, parser);
       } catch (final IOException ex) {

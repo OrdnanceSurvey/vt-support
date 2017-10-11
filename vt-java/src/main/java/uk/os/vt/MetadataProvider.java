@@ -16,15 +16,15 @@
 
 package uk.os.vt;
 
-import rx.Observable;
-import rx.Single;
-import rx.Subscription;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.disposables.Disposable;
 
 public interface MetadataProvider {
 
   Single<Metadata> generateDefault();
 
-  Subscription putMetadata(Single<Metadata> metadata);
+  Disposable putMetadata(Single<Metadata> metadata);
 
   Observable<Metadata> getMetadata();
 
