@@ -25,10 +25,10 @@ import static uk.os.vt.demo.art.space.Shapes.enemy;
 import static uk.os.vt.demo.art.space.Shapes.heart;
 import static uk.os.vt.demo.art.space.Shapes.shooter;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import java.io.File;
 import java.io.IOException;
-import rx.Observable;
-import rx.Single;
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
 import uk.os.vt.demo.util.ResourceUtil;
@@ -48,13 +48,13 @@ public class MainArt {
     // Planet store
     final File planet = ResourceUtil.getFile("osm_planet_z0-z5.mbtiles");
     final StorageImpl planetStorage = new StorageImpl.Builder(planet).build();
-    final Metadata planetMetadata = planetStorage.getMetadata().toBlocking().first();
+    final Metadata planetMetadata = planetStorage.getMetadata().blockingFirst();
 
     // OS boundaries store
     final File boundaries =
         ResourceUtil.getFile("Boundary-line-historic-counties_regionz5.mbtiles");
     final StorageImpl boundaryStorage = new StorageImpl.Builder(boundaries).build();
-    final Metadata boundaryMetadata = boundaryStorage.getMetadata().toBlocking().first();
+    final Metadata boundaryMetadata = boundaryStorage.getMetadata().blockingFirst();
 
     // New metadata
     final Metadata.Builder metadata = new Metadata.Builder().copyMetadata(boundaryMetadata)

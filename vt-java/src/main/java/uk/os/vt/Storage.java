@@ -16,7 +16,7 @@
 
 package uk.os.vt;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public interface Storage extends AutoCloseable, MetadataProvider {
 

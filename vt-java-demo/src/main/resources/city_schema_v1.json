@@ -1,0 +1,16 @@
+{
+  "tilejson": "2.2.0",
+  "format": "pbf",
+  "name": "Cities",
+  "vector_layers": [
+    {
+      "maxzoom": 14,
+      "minzoom": 0,
+      "id": "cities",
+      "fields": {
+        "name": "String name of the country",
+        "timestamp": "Number timestamp of update"
+      }
+    }
+  ]
+}

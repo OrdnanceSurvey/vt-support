@@ -19,18 +19,35 @@ package uk.os.vt.demo.util;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import uk.os.vt.Entry;
 import uk.os.vt.parsers.VtParser;
+import uk.os.vt.parsers.VtParserWdtinc;
 
 public class PrintUtil {
+
+  private static final VtParser DEFAULT_PARSER = new VtParserWdtinc();
 
   /**
    * Print a tile entry.
    *
-   * @param entry the tile entyr
+   * @param entry the tile entry
+   * @throws IOException thrown when reading error
+   */
+  public static void printEntry(Entry entry) throws IOException {
+    System.out.println(String.format("%n%nEntry: %d/%d/%d", entry.getZoomLevel(),
+        entry.getColumn(), entry.getRow()));
+    System.out.println("---------------");
+
+    printGeoms(DEFAULT_PARSER.parse(entry));
+  }
+
+  /**
+   * Print a tile entry.
+   *
+   * @param entry the tile entry
    * @param parser the tile parser
    * @throws IOException thrown when reading error
    */
@@ -48,7 +65,7 @@ public class PrintUtil {
    * @param geoms the geometries
    * @throws IOException thrown when IO error
    */
-  public static void printGeoms(List<Geometry> geoms) throws IOException {
+  public static void printGeoms(Collection<Geometry> geoms) throws IOException {
     System.out.println("Attribute Info");
     System.out.println("---------------");
 

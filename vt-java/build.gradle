@@ -26,18 +26,20 @@ sourceSets {
 // tag::dependencies[]
 dependencies {
     compile 'javax.inject:javax.inject:1'
+    // TODO remove (JTS is now under the Eclipse Public License and VT lib uses JTS)
     compile 'com.esri.geometry:esri-geometry-api:1.2'
-    compile 'com.google.code.gson:gson:2.6.1'
-    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.0.0'
-    compile 'com.squareup.retrofit2:retrofit:2.0.0'
-    compile 'io.reactivex:rxjava:1.1.1'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.5'
     compile 'com.wdtinc:mapbox-vector-tile:2.0.0'
     compile 'no.ecc.vectortile:java-vector-tile:1.2.1'
+    compile 'com.google.code.findbugs:annotations:3.0.1u2'
 
     testCompile deps.junit
     testCompile 'com.squareup.okhttp3:mockwebserver:3.1.2'
-    testCompile "org.mockito:mockito-all:2.+"
+    testCompile "org.mockito:mockito-core:2.10.0"
 
 }
 // end::dependencies[]

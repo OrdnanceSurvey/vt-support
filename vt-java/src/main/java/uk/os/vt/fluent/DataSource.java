@@ -20,6 +20,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.MvtEncoder;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsLayer;
 import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Single;
+import io.reactivex.exceptions.Exceptions;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Single;
-import rx.exceptions.Exceptions;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import uk.os.vt.Entry;
 import uk.os.vt.Key;
 import uk.os.vt.Metadata;
@@ -126,80 +129,20 @@ public class DataSource {
       entries.add(new Entry(zoom, column, row, bytes));
     }
 
-    rx.Observable<Entry> updated = rx.Observable.from(entries).flatMap(new Func1<Entry,
-        rx.Observable<List<Entry>>>() {
-      @Override
-      public rx.Observable<List<Entry>> call(Entry entry) {
-        return storage.getEntry(entry.getZoomLevel(), entry.getColumn(), entry.getRow())
-            .map(new Func1<Entry, List<Entry>>() {
-              @Override
-              public List<Entry> call(Entry newEntry) {
-                return Arrays.asList(entry, newEntry);
-              }
-            }).defaultIfEmpty(Arrays.asList(null, entry));
-      }
-    }).map(new Func1<List<Entry>, Entry>() {
-      @Override
-      public Entry call(List<Entry> entries) {
-        Entry oldEntry = entries.get(0);
-        Entry newEntry = entries.get(1);
+    Observable<Entry> updated = Observable.fromIterable(entries)
+        .flatMap(Tiles.pairWith(storage))
+        .map(Tiles.merge());
 
-        if (oldEntry == null) {
-          // return early - not appending
-          return newEntry;
-        }
-
-        Entry result;
-
-        try {
-          JtsMvt toReturn;
-          JtsMvt oldMvt = MvtDecoder.decode(oldEntry.getVector());
-          JtsMvt newMvt = MvtDecoder.decode(newEntry.getVector());
-
-          // add existing layers
-          toReturn = new JtsMvt(oldMvt.getLayers());
-          //TODO toReturn.addLayers(oldMvt.getLayers());
-
-          // apply new data
-          for (JtsLayer layer : newMvt.getLayers()) {
-            if (toReturn.getLayer(layer.getName()) == null) {
-              toReturn.getLayersByName().put(layer.getName(), layer);
-              //TODO toReturn.addLayer(layer);
-            } else {
-              toReturn.getLayer(layer.getName()).getGeometries().addAll(layer.getGeometries());
-              //TODO toReturn.getLayer(layer.getName()).addAll(layer.getGeometries());
-            }
-          }
-
-          // create replacement vector tile
-          result = new Entry(oldEntry.getZoomLevel(), oldEntry.getColumn(), oldEntry.getRow(),
-              MvtEncoder.encode(toReturn));
-        } catch (IOException exception) {
-          throw Exceptions.propagate(exception);
-        }
-
-        if (result == null) {
-          throw Exceptions.propagate(new IllegalStateException("problem creating new vector tile"));
-        }
-
-        return result;
-      }
-    }).doOnError(new Action1<Throwable>() {
-      @Override
-      public void call(Throwable throwable) {
-        throwable.printStackTrace();
-        System.out.println("Yikes!");
-      }
-    });
     storage.putEntries(updated);
   }
 
+  @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
   private void updateMetadata() {
     storage.getMetadata().defaultIfEmpty(new Metadata.Builder(schema)
         .setAttribution(System.getProperty("user.name")).build())
-        .subscribe(new Action1<Metadata>() {
+        .subscribe(new Consumer<Metadata>() {
           @Override
-          public void call(Metadata metadata) {
+          public void accept(Metadata metadata) throws Exception {
             Metadata.Builder newMetadata = new Metadata.Builder(metadata);
             for (FluentLayer layer : layers) {
               if (!isLayerInMetadata(metadata, layer.getName())) {
@@ -218,5 +161,60 @@ public class DataSource {
       }
     }
     return false;
+  }
+
+  private static class Tiles {
+
+    private static Function<List<Entry>, Entry> merge() {
+      return new Function<List<Entry>, Entry>() {
+        @Override
+        public Entry apply(List<Entry> entries) throws Exception {
+          Entry oldEntry = entries.get(0);
+          Entry newEntry = entries.get(1);
+
+          boolean isNew = oldEntry == null;
+          if (isNew) {
+            return newEntry;
+          }
+
+          try {
+            JtsMvt oldMvt = MvtDecoder.decode(oldEntry.getVector());
+            JtsMvt newMvt = MvtDecoder.decode(newEntry.getVector());
+            JtsMvt toReturn = new JtsMvt(oldMvt.getLayers());
+
+            // apply new data
+            for (JtsLayer layer : newMvt.getLayers()) {
+              if (toReturn.getLayer(layer.getName()) == null) {
+                toReturn.getLayersByName().put(layer.getName(), layer);
+              } else {
+                toReturn.getLayer(layer.getName()).getGeometries().addAll(layer.getGeometries());
+              }
+            }
+
+            // create replacement vector tile
+            return new Entry(oldEntry.getZoomLevel(), oldEntry.getColumn(), oldEntry.getRow(),
+                MvtEncoder.encode(toReturn));
+          } catch (IOException exception) {
+            throw Exceptions.propagate(exception);
+          }
+        }
+      };
+    }
+
+    private static Function<Entry, ObservableSource<List<Entry>>> pairWith(Storage storage) {
+      return new Function<Entry,
+          ObservableSource<List<Entry>>>() {
+        @Override
+        public ObservableSource<List<Entry>> apply(Entry entry) throws Exception {
+          return storage.getEntry(entry.getZoomLevel(), entry.getColumn(), entry.getRow())
+              .map(new Function<Entry, List<Entry>>() {
+                @Override
+                public List<Entry> apply(Entry newEntry) throws Exception {
+                  return Arrays.asList(entry, newEntry);
+                }
+              }).defaultIfEmpty(Arrays.asList(null, entry));
+        }
+      };
+    }
   }
 }

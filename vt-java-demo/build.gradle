@@ -38,11 +38,8 @@ dependencies {
     compile project(':vt-java-filesystem')
     compile project(':vt-java-mbtiles')
 
-    compile 'org.xerial:sqlite-jdbc:3.8.11.2'
-    compile 'com.google.guava:guava:19.0'
-    compile 'io.reactivex:rxjava:1.1.7'
-    compile 'com.github.davidmoten:rxjava-jdbc:0.7.2'
-    compile 'org.slf4j:slf4j-simple:1.7.21'
+    compile 'com.google.guava:guava:23.0'
+    compile 'org.slf4j:slf4j-simple:1.7.25'
     testCompile deps.junit
 
 }

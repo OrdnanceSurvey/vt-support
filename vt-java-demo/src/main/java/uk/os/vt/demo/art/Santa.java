@@ -29,11 +29,10 @@ import static uk.os.vt.demo.art.xmas.Shapes.santaSledgeRunners;
 import static uk.os.vt.demo.art.xmas.Shapes.santaTrimmings;
 import static uk.os.vt.demo.art.xmas.Shapes.santaVisor;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import java.io.File;
 import java.io.IOException;
-
-import rx.Observable;
-import rx.Single;
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
 import uk.os.vt.Storage;
@@ -53,12 +52,12 @@ public class Santa {
   public static void main(String[] args) throws IOException {
     final File planet = ResourceUtil.getFile("osm_planet_z0-z5.mbtiles");
     final StorageImpl planetStorage = new StorageImpl.Builder(planet).build();
-    final Metadata planetMetadata = planetStorage.getMetadata().toBlocking().first();
+    final Metadata planetMetadata = planetStorage.getMetadata().blockingFirst();
 
     final File boundaries =
         ResourceUtil.getFile("Boundary-line-historic-counties_regionz5.mbtiles");
     final StorageImpl boundaryStorage = new StorageImpl.Builder(boundaries).build();
-    final Metadata boundaryMetadata = boundaryStorage.getMetadata().toBlocking().first();
+    final Metadata boundaryMetadata = boundaryStorage.getMetadata().blockingFirst();
 
     final String enemies = "enemies";
     final Picture.Builder picture = new Picture.Builder();
