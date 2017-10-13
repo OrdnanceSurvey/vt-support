@@ -95,7 +95,17 @@ public class DataSource {
     return this;
   }
 
+  /**
+   * Add a WGS84 geometry (within web mercator bounds) to vector tiles.
+   *
+   * @param geometry to be converted into vector tiles
+   *
+   * @return this datasource
+   */
   public DataSource add(Geometry geometry) {
+    if (activeLayer == null) {
+      throw new IllegalStateException("a layer must be specified");
+    }
     activeLayer.add(geometry);
     return this;
   }
@@ -109,10 +119,15 @@ public class DataSource {
     Map<Key, JtsMvt> fragments = Fragmenter.fragment(layers);
     commit(fragments);
     updateMetadata();
+    layers.clear();
     return this;
   }
 
   private void commit(Map<Key, JtsMvt> fragments) {
+    if (fragments.isEmpty()) {
+      LOG.warn("Nothing to commit!  Please add some geometry.");
+      return;
+    }
     Set<Map.Entry<Key, JtsMvt>> entrySet = fragments.entrySet();
     Iterator<Map.Entry<Key, JtsMvt>> iterator = entrySet.iterator();
 
@@ -128,7 +143,6 @@ public class DataSource {
       byte[] bytes = MvtEncoder.encode(item.getValue());
       entries.add(new Entry(zoom, column, row, bytes));
     }
-
     Observable<Entry> updated = Observable.fromIterable(entries)
         .flatMap(Tiles.pairWith(storage))
         .map(Tiles.merge());
