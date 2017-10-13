@@ -40,6 +40,11 @@ import uk.os.vt.Key;
 
 class Fragmenter {
 
+  // Vector Tile Grid
+  private static final int VT_MEASUREMENT_SPACE = 4096;
+  private static final int VT_MIN = 0;
+  private static final int VT_MAX = VT_MIN + VT_MEASUREMENT_SPACE;
+
   /**
    * Default MVT parameters.
    */
@@ -102,9 +107,8 @@ class Fragmenter {
    */
   private static void addToStaging(int z, int x, int y, String layerName, Geometry geometry,
                                    Map<Key, JtsMvt> bucket) {
-    double[] ul = CoordinateConversion.toLatLon(z, x, y, 0, 0, 4096D);
-    double[] lr = CoordinateConversion.toLatLon(z, x, y, 4096, 4096, 4096D);
-    // 4096 for x1, y1 is the next tile                   ^      ^
+    double[] ul = CoordinateConversion.toLatLon(z, x, y, VT_MIN, VT_MIN, VT_MEASUREMENT_SPACE);
+    double[] lr = CoordinateConversion.toLatLon(z, x, y, VT_MAX, VT_MAX, VT_MEASUREMENT_SPACE);
 
     Envelope tileEnvelope = new Envelope(ul[1], lr[1], ul[0], lr[0]);
 

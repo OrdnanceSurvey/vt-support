@@ -62,12 +62,12 @@ public final class CoordinateConversion {
         (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)
             / 2 * (1 << zoom);
 
-    final int row = Math.min(maxTileIndex, Math.max(minTileIndex, (int) Math.floor(xtile)));
-    final int col = Math.min(maxTileIndex, Math.max(minTileIndex, (int) Math.floor(ytile)));
-    final int x1 = (int) ((xtile - row) * measurementSpace);
-    final int y1 = (int) ((ytile - col) * measurementSpace);
+    final int col = Math.min(maxTileIndex, Math.max(minTileIndex, (int) Math.floor(xtile)));
+    final int row = Math.min(maxTileIndex, Math.max(minTileIndex, (int) Math.floor(ytile)));
+    final int x1 = (int) ((xtile - col) * measurementSpace);
+    final int y1 = (int) ((ytile - row) * measurementSpace);
 
-    return new int[] {zoom, row, col, x1, y1};
+    return new int[] {zoom, col, row, x1, y1};
   }
 
   /**
