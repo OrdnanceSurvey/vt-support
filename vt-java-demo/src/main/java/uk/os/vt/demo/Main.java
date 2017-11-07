@@ -29,7 +29,6 @@ import uk.os.vt.Storage;
 import uk.os.vt.demo.util.PrintUtil;
 import uk.os.vt.demo.util.StorageUtil;
 import uk.os.vt.parsers.VtParser;
-import uk.os.vt.parsers.VtParserElectronicChartCentre;
 import uk.os.vt.parsers.VtParserWdtinc;
 
 public class Main {
@@ -57,7 +56,7 @@ public class Main {
     System.out.println("The lucky data is: " + file.getAbsolutePath());
 
     // Pick parser at random
-    final VtParser parser = getRandom(new VtParserElectronicChartCentre(), new VtParserWdtinc());
+    final VtParser parser = new VtParserWdtinc();
     System.out.println("The lucky parser is: " + parser.getClass());
 
     // Print the parse geometries

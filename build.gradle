@@ -13,9 +13,6 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
-        maven {
-            url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
-        }
     }
 }
 

@@ -34,7 +34,6 @@ dependencies {
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'io.reactivex.rxjava2:rxjava:2.1.5'
     compile 'com.wdtinc:mapbox-vector-tile:2.0.0'
-    compile 'no.ecc.vectortile:java-vector-tile:1.2.1'
     compile 'com.google.code.findbugs:annotations:3.0.1u2'
 
     testCompile deps.junit

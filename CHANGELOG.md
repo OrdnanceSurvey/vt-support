@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0.1 *(2017-11-07)*
+----------------------------
+* Remove: Electronic Chart Centre parser 
+
 Version 2.0.0 *(2017-11-07)*
 ----------------------------
 * New: RxJava2
