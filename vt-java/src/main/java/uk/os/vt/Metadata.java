@@ -18,13 +18,18 @@ package uk.os.vt;
 
 import static uk.os.vt.JsonUtil.getDoubleArrayIgnoreErrors;
 import static uk.os.vt.JsonUtil.getIntegerIgnoreErrors;
+import static uk.os.vt.JsonUtil.getJsonArrayAsListIgnoreErrors;
+import static uk.os.vt.JsonUtil.getMap;
 import static uk.os.vt.JsonUtil.getStringIgnoreErrors;
 import static uk.os.vt.JsonUtil.putIgnoreErrors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -274,10 +279,12 @@ public class Metadata {
     private final String description;
     private final int minZoom;
     private final int maxZoom;
+    private final List<Attribute> attributes;
 
     public static final class Builder {
 
       private JSONObject json = new JSONObject();
+      private boolean hasOrderedFields;
 
       public Builder() {}
 
@@ -288,31 +295,6 @@ public class Metadata {
        */
       public Builder(Metadata.Layer existing) {
         json = existing.getJson();
-      }
-
-      public Builder setJson(JSONObject value) {
-        json = value;
-        return this;
-      }
-
-      public Builder setId(String value) {
-        JsonUtil.putIgnoreErrors(json, "id", value);
-        return this;
-      }
-
-      public Builder setDescription(String value) {
-        JsonUtil.putIgnoreErrors(json, "description", value);
-        return this;
-      }
-
-      public Builder setMaxZoom(int value) {
-        JsonUtil.putIgnoreErrors(json, "maxzoom", value);
-        return this;
-      }
-
-      public Builder setMinZoom(int value) {
-        JsonUtil.putIgnoreErrors(json, "minzoom", value);
-        return this;
       }
 
       /**
@@ -330,17 +312,76 @@ public class Metadata {
 
           final JSONObject fields = json.getJSONObject("fields");
           fields.put(key, desc);
+
+          if (hasOrderedFields) {
+            if (!json.has("fields_order")) {
+              json.put("fields_order", new JSONArray());
+            }
+
+            JSONArray fieldsOrder = json.getJSONArray("fields_order");
+            int fieldPosition = getFieldPosition(key, fieldsOrder);
+
+            boolean hasFieldPosition = fieldPosition != -1;
+            if (hasFieldPosition) {
+              JSONArray newFieldsOrder = new JSONArray();
+              for (int i = 0; i < fieldsOrder.length(); i++) {
+                if (fieldPosition == i) {
+                  continue;
+                }
+                newFieldsOrder.put(fieldsOrder.get(i));
+              }
+              json.put("fields_order", newFieldsOrder);
+              fieldsOrder = json.getJSONArray("fields_order");
+            }
+            fieldsOrder.put(key);
+          }
         } catch (final JSONException ex) {
           LOG.error("problem adding field", ex);
         }
         return this;
+      }
 
-        // layer.put("fields", fields);
-        //
-        // fields.put("area", "Integer in square meters of an area");
-        // fields.put("name", "Local name of the badger");
-        // fields.put("name_de", "English name of the badger");
-        // fields.put("name_de", "German name of the badger");
+      /**
+       * Add one or more fields.
+       *
+       * @param attributes the attribute values
+       * @return this builder
+       */
+      public Builder addField(Attribute... attributes) {
+        for (Attribute attribute : attributes) {
+          addField(attribute.getName(), attribute.getDescription());
+        }
+        return this;
+      }
+
+      public Builder preserveFieldOrder(boolean isOrder) {
+        hasOrderedFields = isOrder;
+        return this;
+      }
+
+      public Builder setDescription(String value) {
+        JsonUtil.putIgnoreErrors(json, "description", value);
+        return this;
+      }
+
+      public Builder setId(String value) {
+        JsonUtil.putIgnoreErrors(json, "id", value);
+        return this;
+      }
+
+      public Builder setJson(JSONObject value) {
+        json = value;
+        return this;
+      }
+
+      public Builder setMaxZoom(int value) {
+        JsonUtil.putIgnoreErrors(json, "maxzoom", value);
+        return this;
+      }
+
+      public Builder setMinZoom(int value) {
+        JsonUtil.putIgnoreErrors(json, "minzoom", value);
+        return this;
       }
 
       /**
@@ -356,8 +397,31 @@ public class Metadata {
         return this;
       }
 
+      /**
+       * Create the Layer from any given configuration.
+       *
+       * @return the built layer
+       */
       public Layer build() {
         return new Layer(json);
+      }
+
+      /**
+       *
+       * @param value the item under test
+       * @param fieldsOrder the field array, which signifies order.
+       * @return the position of the value in the array or -1 if not found.
+       * @throws JSONException thrown if fieldsOrder has anything other than String descriptions.
+       */
+      private int getFieldPosition(String value, JSONArray fieldsOrder) throws JSONException {
+        for (int i = 0; i < fieldsOrder.length(); i++) {
+          String thisValue = fieldsOrder.getString(i);
+
+          if (value.equals(thisValue)) {
+            return i;
+          }
+        }
+        return -1;
       }
     }
 
@@ -369,6 +433,7 @@ public class Metadata {
       description = getStringIgnoreErrors("description", json, null);
       minZoom = getIntegerIgnoreErrors("minzoom", json, 0);
       maxZoom = getIntegerIgnoreErrors("maxzoom", json, 22);
+      attributes = getAttributesFromJson(json);
     }
 
     public String getId() {
@@ -387,6 +452,10 @@ public class Metadata {
       return maxZoom;
     }
 
+    public List<Attribute> getAttributes() {
+      return attributes;
+    }
+
     /**
      * Get the JSONObject for a tile JSON.
      *
@@ -398,6 +467,119 @@ public class Metadata {
       } catch (final JSONException ex) {
         LOG.error("problem creating new JSONObject", ex);
         return new JSONObject();
+      }
+    }
+
+    private static List<Attribute> getAttributesFromJson(JSONObject json) {
+      List<Attribute> attributes = new ArrayList<>();
+
+      Map<String, String> map = getOrderedAttributeDescriptionMap(json);
+      for (Map.Entry<String, String> entry : map.entrySet()) {
+        Attribute attribute = new Attribute.Builder()
+            .setName(entry.getKey())
+            .setDescription(entry.getValue())
+            .build();
+        attributes.add(attribute);
+      }
+      return Collections.unmodifiableList(attributes);
+    }
+
+    private static Map<String, String> getOrderedAttributeDescriptionMap(JSONObject json) {
+      Map<String, String> fieldsUnordered = getMap("fields", json,
+          new LinkedHashMap<String, String>());
+      List<String> fieldsOrder = getJsonArrayAsListIgnoreErrors("fields_order", json,
+          new ArrayList<String>());
+      Map<String, String> fieldsOrdered = new LinkedHashMap<>();
+      for (String field : fieldsOrder) {
+        String value = fieldsUnordered.remove(field);
+        fieldsOrdered.put(field, value);
+      }
+      // add remaining
+      fieldsOrdered.putAll(fieldsUnordered);
+      return fieldsOrdered;
+    }
+
+    public static final class Attribute {
+      private final String name;
+      private final String description;
+
+      private Attribute(String name, String description) {
+        this.name = name;
+        this.description = description;
+      }
+
+      public String getName() {
+        return name;
+      }
+
+      public String getDescription() {
+        return description;
+      }
+
+      @Override
+      public boolean equals(Object object) {
+        if (this == object) {
+          return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+          return false;
+        }
+
+        Attribute attribute = (Attribute) object;
+
+        if (!name.equals(attribute.name)) {
+          return false;
+        }
+        return description.equals(attribute.description);
+      }
+
+      @Override
+      public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + description.hashCode();
+        return result;
+      }
+
+      @Override
+      public String toString() {
+        return "Attribute{"
+            + "name='" + name + '\''
+            + ", description='" + description + '\''
+            + '}';
+      }
+
+      public static final class Builder {
+
+        private String name = "";
+        private String description = "";
+
+        public Builder() {}
+
+        public Builder setName(String name) {
+          this.name = name;
+          return this;
+        }
+
+        public Builder setDescription(String description) {
+          this.description = description;
+          return this;
+        }
+
+        /**
+         * Build an Attribute.
+         *
+         * @return the built attribute
+         */
+        public Attribute build() {
+          if (name == null) {
+            throw new IllegalArgumentException("attribute name must be defined");
+          }
+          if (description == null) {
+            description = "";
+          }
+          return new Attribute(name, description);
+        }
       }
     }
   }

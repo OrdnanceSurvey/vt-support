@@ -16,6 +16,11 @@
 
 package uk.os.vt;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,7 +64,7 @@ public final class JsonUtil {
   }
 
   protected static String getStringIgnoreErrors(String attribute, JSONObject source,
-      String defaultValue) {
+                                                String defaultValue) {
     if (source.has(attribute)) {
       try {
         return source.getString(attribute);
@@ -68,6 +73,42 @@ public final class JsonUtil {
       }
     }
     return defaultValue;
+  }
+
+  protected static JSONArray getJsonArrayIgnoreErrors(String attribute, JSONObject source,
+                                                      JSONArray defaultValue) {
+    if (source.has(attribute)) {
+      try {
+        return source.getJSONArray(attribute);
+      } catch (final JSONException ex) {
+        LOG.error("problem getting JsonArray", ex);
+      }
+    }
+    return defaultValue;
+  }
+
+  protected static <T> List<T> getJsonArrayAsListIgnoreErrors(String attribute, JSONObject source,
+                                                              List<T> defaultList) {
+    JSONArray array = getJsonArrayIgnoreErrors(attribute, source, null);
+    boolean isArray = array != null;
+    if (isArray) {
+      List<T> list = new ArrayList<>();
+      return getJsonArrayAsListIgnoreErrors(array, list);
+    }
+    return defaultList;
+  }
+
+  protected static <T> List<T> getJsonArrayAsListIgnoreErrors(JSONArray source, List<T> list) {
+    for (int i = 0; i < source.length(); i++) {
+      try {
+        @SuppressWarnings("unchecked")
+        T value = (T) source.get(i);
+        list.add(value);
+      } catch (JSONException ex) {
+        LOG.error("problem getting value", ex);
+      }
+    }
+    return list;
   }
 
   protected static void putIgnoreErrors(JSONObject jsonObject, String attribute, double[] value) {
@@ -102,8 +143,36 @@ public final class JsonUtil {
     }
   }
 
+  protected static <T> Map<String, T> getMap(String attribute, JSONObject source,
+                                             Map<String, T> defaultValue) {
+    Map<String, T> map = new HashMap<>();
+    if (source.has(attribute)) {
+      try {
+        Object object = source.get(attribute);
+        if (object instanceof JSONObject) {
+          JSONObject jsonObject = (JSONObject) object;
+          Iterator keys = jsonObject.keys();
+          while (keys.hasNext()) {
+            try {
+              String key = (String) keys.next();
+              @SuppressWarnings("unchecked")
+              T value = (T) jsonObject.get(key);
+              map.put(key, value);
+            } catch (JSONException ex) {
+              LOG.error("problem getting key value", ex);
+            }
+          }
+          return map;
+        }
+      } catch (JSONException ex) {
+        LOG.error("problem getting attribute", ex);
+      }
+    }
+    return defaultValue;
+  }
+
   protected static int getIntegerIgnoreErrors(String attribute, JSONObject source,
-      int defaultValue) {
+                                              int defaultValue) {
     if (source.has(attribute)) {
       try {
         return source.getInt(attribute);
@@ -115,7 +184,7 @@ public final class JsonUtil {
   }
 
   protected static double[] getDoubleArrayIgnoreErrors(String attribute, JSONObject source,
-      double[] defaultValue) {
+                                                       double[] defaultValue) {
     if (source.has(attribute)) {
       try {
         final JSONArray array = source.getJSONArray(attribute);

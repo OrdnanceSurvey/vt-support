@@ -83,6 +83,7 @@ public class Outbreaks {
   }
 
   private static Geometry apply(String disease, Geometry g) {
+    @SuppressWarnings("unchecked")
     Map<String, Object> attributes = (Map<String, Object>) g.getUserData();
 
     // create random timestamp

@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0.2 *(2017-11-08)*
+----------------------------
+* New: Metadata.Layers supports attributes (fields in TileJSON)  
+
 Version 2.0.1 *(2017-11-07)*
 ----------------------------
 * Remove: Electronic Chart Centre parser 
