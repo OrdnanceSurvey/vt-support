@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 2.0.3 *(2017-11-09)*
+----------------------------
+* Remove: old dependencies
+* New: limited support for Android
+
 Version 2.0.2 *(2017-11-08)*
 ----------------------------
 * New: Metadata.Layers supports attributes (fields in TileJSON)  
