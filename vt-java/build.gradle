@@ -25,12 +25,7 @@ sourceSets {
 
 // tag::dependencies[]
 dependencies {
-    compile 'javax.inject:javax.inject:1'
-    compile 'com.google.code.gson:gson:2.8.2'
-    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
-    compile 'com.squareup.retrofit2:retrofit:2.3.0'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.5'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.6'
     compile 'com.wdtinc:mapbox-vector-tile:2.0.0'
     compile 'com.google.code.findbugs:annotations:3.0.1u2'
     compile 'org.json:json:20171018'

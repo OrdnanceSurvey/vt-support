@@ -3,12 +3,6 @@ apply plugin: 'java'
 version =  VERSION_NAME
 group =  GROUP
 
-repositories {
-    maven {
-        url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
-    }
-}
-
 compileJava {
     sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
     targetCompatibility = rootProject.ext.targetCompatibilityVersion
@@ -38,7 +32,7 @@ dependencies {
     compile project(':vt-java-filesystem')
     compile project(':vt-java-mbtiles')
 
-    compile 'com.google.guava:guava:23.0'
+    compile 'com.google.guava:guava:23.3-jre'
     compile 'org.slf4j:slf4j-simple:1.7.25'
     testCompile deps.junit
 
@@ -63,4 +57,3 @@ task testi(type: Test) {
     mustRunAfter test
 }
 
-apply from: rootProject.file('gradle/gradle-mvn-push-java.gradle')
