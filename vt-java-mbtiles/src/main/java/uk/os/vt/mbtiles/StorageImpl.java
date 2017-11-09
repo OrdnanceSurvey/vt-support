@@ -281,15 +281,22 @@ public class StorageImpl implements Storage, MetadataProvider {
           continue;
         }
         try {
-          final String value = tilejson.getString(key);
           if (key.equals("center") || key.equals("bounds")) {
+            final String value = tilejson.getJSONArray(key).toString();
             final Pattern pattern = Pattern.compile("^\\[(.*)\\]$");
             final Matcher matcher = pattern.matcher(value);
             if (matcher.matches()) {
               final String toCommit = matcher.group(1);
               Collections.addAll(params, key, toCommit);
             }
-          } else if (value != null && !value.isEmpty()) {
+            continue;
+          }
+
+          final Object value = tilejson.get(key);
+          boolean isGoodString = value != null && value instanceof String
+              && !((String) value).isEmpty();
+          boolean isString = value instanceof String;
+          if (!isString || isGoodString) {
             Collections.addAll(params, key, value);
           }
         } catch (final JSONException ex) {

@@ -31,8 +31,8 @@ dependencies {
     compile project(':vt-java')
 
     compile 'org.apache.commons:commons-io:1.3.2'
-    compile 'com.google.guava:guava:23.0'
-    compile 'org.slf4j:slf4j-simple:1.7.25'
+    compile 'com.google.guava:guava:23.3-jre'
+    compile 'org.slf4j:slf4j-nop:1.7.25'
     testCompile 'org.skyscreamer:jsonassert:1.5.0'
     testCompile deps.junit
     
