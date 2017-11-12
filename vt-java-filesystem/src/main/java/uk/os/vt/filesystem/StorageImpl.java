@@ -171,7 +171,7 @@ public final class StorageImpl implements Storage, MetadataProvider {
       final File metadata = new File(directory, "config.json");
       try {
         if (metadata.exists()) {
-          final String raw = FileUtils.readFileToString(metadata);
+          final String raw = FileUtils.readFileToString(metadata, "UTF-8");
           final Metadata result = new Metadata.Builder().setTileJson(raw).build();
           return Observable.just(result);
         }
