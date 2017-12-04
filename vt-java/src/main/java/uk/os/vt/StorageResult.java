@@ -36,7 +36,8 @@ public class StorageResult {
   /**
    * A result class to be returned after unsuccessful submission to storage.
    *
-   * @param entry the tile that was successfully passed to storage
+   * @param entry the tile that was unsuccessfully passed to storage
+   * @param exception the exception that was thrown attempting to update the storage
    */
   public StorageResult(Entry entry, Exception exception) {
     this.entry = entry;
