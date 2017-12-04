@@ -37,12 +37,12 @@ class FilesystemUtil {
   private static final long KILOBYTE = 1024;
 
   // only *nix considered
-  private static final Pattern PATTERN = Pattern.compile("^.*/(\\d+)/(\\d+)/(\\d+)(.mvt|.pbf)?$");
+  private static final Pattern PATTERN = Pattern.compile("^.*/(\\d+)/(\\d+)/(\\d+)\\.pbf?$");
   private static final int PATTERN_Z = 1;
   private static final int PATTERN_X = 2;
   private static final int PATTERN_Y = 3;
 
-  private static final String MVT_FILE_EXTENSION = ".mvt";
+  private static final String DEFAULT_FILE_EXTENSION = ".pbf";
 
   private FilesystemUtil() {}
 
@@ -52,7 +52,7 @@ class FilesystemUtil {
     // compressed size. Suspect former.
 
     final String relativePath = entry.getZoomLevel() + File.separator + entry.getColumn()
-        + File.separator + entry.getRow() + MVT_FILE_EXTENSION;
+        + File.separator + entry.getRow() + DEFAULT_FILE_EXTENSION;
     final File destination = new File(baseDirectory, relativePath);
 
     byte[] data;
@@ -68,9 +68,9 @@ class FilesystemUtil {
 
   public static Entry toEntry(File file) throws IOException {
 
-    final boolean isValidMvtSize = file.length() <= 500 * KILOBYTE;
-    if (!isValidMvtSize) {
-      throw new IOException("Illegal mvt - file exceeds 500kb! " + file.getAbsolutePath());
+    final boolean isValidVtSize = file.length() <= 500 * KILOBYTE;
+    if (!isValidVtSize) {
+      throw new IOException("Illegal vector tile - file exceeds 500kb! " + file.getAbsolutePath());
     }
 
     final Matcher m = PATTERN.matcher(file.getAbsolutePath());
@@ -208,19 +208,12 @@ class FilesystemUtil {
   /**
    *
    * @param fullCoordinate file path, e.g. /0/1/2
-   * @return file matching either /0/1/2.mvt or /0/1/2.pbf else empty
+   * @return file matching z/x/y.pbf (e.g. /0/1/2.pbf) else empty
    */
   private static File[] getSingleMatchOrEmpty(File fullCoordinate) {
-    File[] possible = new File[]{
-        new File(fullCoordinate.getAbsoluteFile() + ".mvt"),
-        // should remove .pbf as external put mandates .mvt
-        new File(fullCoordinate.getAbsoluteFile() + ".pbf")
-    };
-
-    for (File f : possible) {
-      if (PATTERN.matcher(f.toString()).matches() && f.exists()) {
-        return new File[]{f};
-      }
+    File file = new File(fullCoordinate.getAbsoluteFile() + ".pbf");
+    if (PATTERN.matcher(file.toString()).matches() && file.exists()) {
+      return new File[]{file};
     }
     return new File[]{};
   }
