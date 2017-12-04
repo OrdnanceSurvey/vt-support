@@ -51,9 +51,7 @@ class FilesystemUtil {
     // TODO establish if "limit tiles to 500K bytes" is raw size or
     // compressed size. Suspect former.
 
-    final String relativePath = entry.getZoomLevel() + File.separator + entry.getColumn()
-        + File.separator + entry.getRow() + DEFAULT_FILE_EXTENSION;
-    final File destination = new File(baseDirectory, relativePath);
+    final File destination = getEntryLocationOnDisk(baseDirectory, entry);
 
     byte[] data;
     if (useGzipCompression) {
@@ -64,6 +62,13 @@ class FilesystemUtil {
     }
 
     FileUtils.writeByteArrayToFile(destination, data);
+  }
+
+  public static void removeEntry(File baseDirectory, Entry entry) throws IOException {
+    final File source = getEntryLocationOnDisk(baseDirectory, entry);
+    if (source.exists() && !source.delete()) {
+      throw new IOException("cannot delete");
+    }
   }
 
   public static Entry toEntry(File file) throws IOException {
@@ -154,6 +159,12 @@ class FilesystemUtil {
     } else {
       throw new IllegalStateException("file does not match: " + file.getAbsolutePath());
     }
+  }
+
+  private static File getEntryLocationOnDisk(File baseDirectory, Entry entry) {
+    final String relativePath = entry.getZoomLevel() + File.separator + entry.getColumn()
+        + File.separator + entry.getRow() + DEFAULT_FILE_EXTENSION;
+    return new File(baseDirectory, relativePath);
   }
 
   /**

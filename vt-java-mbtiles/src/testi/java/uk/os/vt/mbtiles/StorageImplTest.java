@@ -18,6 +18,7 @@ package uk.os.vt.mbtiles;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -27,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.AfterClass;
@@ -35,6 +38,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
+import uk.os.vt.StorageResult;
 
 public class StorageImplTest {
 
@@ -150,6 +154,53 @@ public class StorageImplTest {
     final Entry out = storage.getEntries().blockingFirst();
 
     assertEquals(in, out);
+  }
+
+  @Test
+  public void deleteAnEntry() throws IOException {
+    final File file = provideNonExistentTestFileOrBlow();
+    final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
+
+    final Entry in = createEntries(1).blockingFirst();
+    storage.putEntries(Observable.just(in));
+    final Entry out = storage.getEntries().blockingFirst();
+    assertEquals(in, out);
+    StorageResult first = storage.delete(Observable.just(out)).blockingFirst();
+    assertTrue(first.isCompleted());
+  }
+
+  @Test
+  public void deleteAnEntryNonExistent() throws IOException {
+    final File file = provideNonExistentTestFileOrBlow();
+    final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
+
+    final Entry in = createEntries(1).blockingFirst();
+    storage.putEntries(Observable.just(in));
+    final Entry out = storage.getEntries().blockingFirst();
+    assertEquals(in, out);
+
+    Entry nonExistentEntry = new Entry(17,9,1, "".getBytes());
+    StorageResult first = storage.delete(Observable.just(out, nonExistentEntry)).blockingFirst();
+    assertTrue(first.isCompleted());
+  }
+
+  @Test
+  public void deleteEntries() throws IOException {
+    final File file = provideNonExistentTestFileOrBlow();
+    final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
+    storage.putEntries(createEntries(1000));
+    storage.delete(createEntries(400)).subscribe();
+    long actualRemaining = storage.getEntries().count().blockingGet();
+    long expectedRemaining = 600L;
+    assertEquals(expectedRemaining, actualRemaining);
+  }
+
+  private static Observable<Entry> createEntries(int count) {
+    List<Entry> entries = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      entries.add(new Entry(22, i, i, "".getBytes()));
+    }
+    return Observable.fromIterable(entries);
   }
 
   @AfterClass

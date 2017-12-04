@@ -31,4 +31,6 @@ public interface Storage extends AutoCloseable, MetadataProvider {
   Observable<Integer> getMinZoomLevel();
 
   void putEntries(Observable<Entry> entries);
+
+  Observable<StorageResult> delete(Observable<Entry> entries);
 }

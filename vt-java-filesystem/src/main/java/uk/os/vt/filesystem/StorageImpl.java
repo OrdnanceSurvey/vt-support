@@ -43,6 +43,7 @@ import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
 import uk.os.vt.MetadataProvider;
 import uk.os.vt.Storage;
+import uk.os.vt.StorageResult;
 
 public final class StorageImpl implements Storage, MetadataProvider {
 
@@ -160,7 +161,7 @@ public final class StorageImpl implements Storage, MetadataProvider {
       try {
         FilesystemUtil.addEntry(directory, entry, gzipEnabled);
       } catch (final IOException ex) {
-        Exceptions.propagate(ex);
+        throw Exceptions.propagate(ex);
       }
     });
   }
@@ -179,6 +180,18 @@ public final class StorageImpl implements Storage, MetadataProvider {
         throw Exceptions.propagate(ex);
       }
       return Observable.empty();
+    });
+  }
+
+  @Override
+  public Observable<StorageResult> delete(Observable<Entry> entries) {
+    return entries.map(entry -> {
+      try {
+        FilesystemUtil.removeEntry(directory, entry);
+        return new StorageResult(entry);
+      } catch (final IOException ex) {
+        return new StorageResult(entry, new IOException("cannot delete entry", ex));
+      }
     });
   }
 
