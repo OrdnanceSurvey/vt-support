@@ -49,7 +49,7 @@ public class FilesystemUtilTest {
     // WHEN
     FilesystemUtil.addEntry(baseDirectory, entry, useGzipCompression);
 
-    final File expectedFile = new File(testFolder.getRoot() + "/testdir/0/0/0.mvt");
+    final File expectedFile = new File(testFolder.getRoot() + "/testdir/0/0/0.pbf");
     System.out.println("expectedFile: " + expectedFile);
     assertTrue(expectedFile.exists());
     assertEquals(bytes.length, expectedFile.length());
@@ -67,7 +67,7 @@ public class FilesystemUtilTest {
     // WHEN
     FilesystemUtil.addEntry(baseDirectory, entry, useGzipCompression);
 
-    final File expectedFile = new File(testFolder.getRoot() + "/testdir/0/0/0.mvt");
+    final File expectedFile = new File(testFolder.getRoot() + "/testdir/0/0/0.pbf");
     System.out.println("expectedFile: " + expectedFile);
     assertTrue(expectedFile.exists());
     assertEquals(24, expectedFile.length());
@@ -82,7 +82,7 @@ public class FilesystemUtilTest {
     final Entry entry = new Entry(3, 4, 5, bytes);
     final boolean useGzipCompression = false;
     FilesystemUtil.addEntry(baseDirectory, entry, useGzipCompression);
-    final File inputFile = new File(testFolder.getRoot() + "/testdir/3/4/5.mvt");
+    final File inputFile = new File(testFolder.getRoot() + "/testdir/3/4/5.pbf");
     System.out.println("inputFile: " + inputFile);
 
     // WHEN

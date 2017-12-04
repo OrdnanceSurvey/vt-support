@@ -35,7 +35,7 @@ public class Entry {
    * @param zoomLevel The zoom level
    * @param column The tile in x direction
    * @param row The tile in y direction
-   * @param vector uncompressed mvt bytes - no gzip compression etc.
+   * @param vector uncompressed vector tile bytes - no gzip compression etc.
    */
   public Entry(int zoomLevel, int column, int row, byte[] vector) {
     validate(zoomLevel, column, row, vector);
@@ -122,9 +122,9 @@ public class Entry {
       throw new IllegalArgumentException(message);
     }
 
-    final boolean isValidMvtSize = vector.length <= MAX_VECTOR_TILE_SIZE;
-    if (!isValidMvtSize) {
-      throw new IllegalArgumentException("Illegal mvt - bytes exceeds 500kb!");
+    final boolean isValidVtSize = vector.length <= MAX_VECTOR_TILE_SIZE;
+    if (!isValidVtSize) {
+      throw new IllegalArgumentException("Illegal vector tile - bytes exceeds 500kb!");
     }
   }
 }
