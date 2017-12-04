@@ -18,31 +18,75 @@ package uk.os.vt.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-
 import uk.os.vt.Entry;
 import uk.os.vt.Metadata;
+import uk.os.vt.StorageResult;
 
 public class StorageImplTest {
 
   private static final String SINGLE_ZOOM_LEVEL_FILESYSTEM = "z5";
   private static final String MULTIPLE_ZOOM_LEVEL_FILESYSTEM = "z0to4";
+
+  @Test
+  public void testDelete() throws IOException {
+    // Define something
+    final File file = provideNonExistentTestDirectoryOrBlow();
+    final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
+
+    final int zoomLevel = 3;
+    final int column = 4;
+    final int row = 5;
+    final byte[] bytes = getGarbageBytes();
+
+    // Put the something on disk
+    final Entry in = new Entry(zoomLevel, column, row, bytes);
+    storage.putEntries(Observable.just(in));
+    final Entry out = storage.getEntries().blockingFirst();
+    // Verify it is on disk
+    assertEquals(in, out);
+
+    // Delete that something
+    StorageResult result = storage.delete(Observable.just(out)).blockingFirst();
+    assertTrue(result.isCompleted());
+
+    // Verify it was deleted
+    Iterable<Entry> iterable = storage.getEntry(zoomLevel, column, row).blockingIterable();
+    assertTrue(!iterable.iterator().hasNext());
+  }
+
+  @Test
+  public void testDeleteNothing() throws IOException {
+    // Define something
+    final File file = provideNonExistentTestDirectoryOrBlow();
+    final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
+
+    final int zoomLevel = 3;
+    final int column = 4;
+    final int row = 5;
+    final byte[] bytes = getGarbageBytes();
+
+    // Something NOT on disk
+    final Entry entry = new Entry(zoomLevel, column, row, bytes);
+    // Delete that something
+    StorageResult result = storage.delete(Observable.just(entry)).blockingFirst();
+    assertTrue(result.isCompleted());
+  }
 
   @Test
   public void testGenerateDefaultIsNullWhenNoTiles() throws IOException, JSONException {

@@ -21,6 +21,7 @@ import com.google.common.io.Resources;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.exceptions.Exceptions;
@@ -58,6 +59,7 @@ import uk.os.vt.JsonUtil;
 import uk.os.vt.Metadata;
 import uk.os.vt.MetadataProvider;
 import uk.os.vt.Storage;
+import uk.os.vt.StorageResult;
 import uk.os.vt.common.CompressUtil;
 
 public class StorageImpl implements Storage, MetadataProvider {
@@ -188,6 +190,26 @@ public class StorageImpl implements Storage, MetadataProvider {
         .test() // TODO remove hack
         .awaitDone(5, TimeUnit.SECONDS)
         .assertComplete();
+  }
+
+  @Override
+  public Observable<StorageResult> delete(Observable<Entry> entries) {
+    return entries.flatMap((Function<Entry, ObservableSource<StorageResult>>) entry -> {
+      final String delete =
+          "DELETE FROM TILES WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?";
+      return dataSource.update(delete)
+          .parameters(entry.getZoomLevel(), entry.getColumn(), flipY(entry.getRow(),
+              entry.getZoomLevel()))
+          .counts()
+          .map(count -> {
+            if (count == 1) {
+              return new StorageResult(entry);
+            } else {
+              return new StorageResult(entry,
+                  new IOException("expected to update single item.  Rows updated " + count));
+            }
+          }).toObservable();
+    });
   }
 
   @Override
