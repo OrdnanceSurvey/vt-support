@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 2.0.4 *(2017-12-04)*
+----------------------------
+* Update: old dependencies
+* New: add delete to Storage class
+
 Version 2.0.3 *(2017-11-09)*
 ----------------------------
 * Remove: old dependencies
