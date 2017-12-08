@@ -193,6 +193,31 @@ public class StorageImpl implements Storage, MetadataProvider {
   }
 
   @Override
+  public Observable<StorageResult> put(Observable<Entry> entries) {
+    return entries.flatMap((Function<Entry, ObservableSource<StorageResult>>) entry -> {
+      final String insert =
+          "INSERT OR REPLACE INTO TILES(zoom_level, tile_column, tile_row, tile_data)"
+              + " values (?, ?, ?, ?);";
+
+      byte[] compressedMvt;
+      try {
+        compressedMvt = CompressUtil.getCompressedAsGzip(entry.getVector());
+      } catch (final IOException ex) {
+        throw Exceptions.propagate(ex);
+      }
+
+      Observable<Object> params = Observable.<Object>just(entry.getZoomLevel(), entry.getColumn(),
+          flipY(entry.getRow(), entry.getZoomLevel()), compressedMvt);
+
+      return dataSource.update(insert)
+          .parameterStream(params.toFlowable(BackpressureStrategy.BUFFER)).counts()
+          .map(integer -> new StorageResult(entry))
+          .onErrorReturn(throwable -> new StorageResult(entry, new Exception(throwable)))
+          .toObservable();
+    });
+  }
+
+  @Override
   public Observable<StorageResult> delete(Observable<Entry> entries) {
     return entries.flatMap((Function<Entry, ObservableSource<StorageResult>>) entry -> {
       final String delete =

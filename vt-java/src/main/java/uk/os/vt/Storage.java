@@ -32,5 +32,7 @@ public interface Storage extends AutoCloseable, MetadataProvider {
 
   void putEntries(Observable<Entry> entries);
 
+  Observable<StorageResult> put(Observable<Entry> entries);
+
   Observable<StorageResult> delete(Observable<Entry> entries);
 }
