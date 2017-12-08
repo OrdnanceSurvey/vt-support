@@ -167,6 +167,18 @@ public final class StorageImpl implements Storage, MetadataProvider {
   }
 
   @Override
+  public Observable<StorageResult> put(Observable<Entry> entries) {
+    return entries.map(entry -> {
+      try {
+        FilesystemUtil.addEntry(directory, entry, gzipEnabled);
+        return new StorageResult(entry);
+      } catch (final IOException ex) {
+        return new StorageResult(entry, new IOException("cannot put entry", ex));
+      }
+    });
+  }
+
+  @Override
   public Observable<Metadata> getMetadata() {
     return Observable.defer(() -> {
       final File metadata = new File(directory, "config.json");

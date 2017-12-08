@@ -245,6 +245,34 @@ public class StorageImplTest {
     assertEquals(in, out);
   }
 
+  @Test
+  public void addEntries() throws IOException {
+    final File file = provideNonExistentTestDirectoryOrBlow();
+    final StorageImpl storage = new StorageImpl.Builder(file).createIfNotExist().build();
+
+    final int zoomLevel = 3;
+    final int column = 4;
+    final int row = 5;
+    final byte[] bytes = getGarbageBytes();
+
+    final Entry in = new Entry(zoomLevel, column, row, bytes);
+    final StorageResult result = storage.put(Observable.just(in)).blockingFirst();
+    final Entry out = storage.getEntries().blockingFirst();
+    assertEquals(in, out);
+    assertEquals(result.getEntry(), out);
+
+    final int zoomLevel2 = 9;
+    final int column2 = 1;
+    final int row2 = 1;
+    final byte[] bytes2 = getGarbageBytes("test2");
+
+    final Entry in2 = new Entry(zoomLevel2, column2, row2, bytes2);
+    final StorageResult result2 = storage.put(Observable.just(in2)).blockingFirst();
+    final Entry out2 = storage.getEntry(zoomLevel2, column2, row2).blockingFirst();
+    assertEquals(in2, out2);
+    assertEquals(result2.getEntry(), out2);
+  }
+
   @AfterClass
   public static void cleanup() {
     provideNonExistentTestDirectoryOrBlow();
@@ -268,8 +296,12 @@ public class StorageImplTest {
   }
 
   private byte[] getGarbageBytes() {
+    return getGarbageBytes("test");
+  }
+
+  private byte[] getGarbageBytes(String string) {
     try {
-      return "test".getBytes("UTF-8");
+      return string.getBytes("UTF-8");
     } catch (UnsupportedEncodingException uee) {
       return new byte[]{};
     }
