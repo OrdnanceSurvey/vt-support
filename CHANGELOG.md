@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0.5 *(2017-12-08)*
+----------------------------
+* New: add observable put method to Storage class
+
 Version 2.0.4 *(2017-12-04)*
 ----------------------------
 * Update: old dependencies
