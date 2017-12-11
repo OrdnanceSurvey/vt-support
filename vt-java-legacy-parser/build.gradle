@@ -22,6 +22,10 @@ sourceSets {
     }
 }
 
+tasks.withType(Javadoc) {
+    exclude("**/VectorTile.java")
+}
+
 // tag::dependencies[]
 dependencies {
     compile 'com.google.protobuf:protobuf-java:3.0.0-beta-2'

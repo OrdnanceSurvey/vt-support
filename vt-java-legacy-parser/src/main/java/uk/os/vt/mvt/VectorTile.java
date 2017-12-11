@@ -31,19 +31,23 @@ public final class VectorTile {
 
     /**
      * <code>repeated .vector_tile.Tile.Layer layers = 3;</code>
+     * @return list of layers
      */
     java.util.List<uk.os.vt.mvt.VectorTile.Tile.Layer>
         getLayersList();
     /**
      * <code>repeated .vector_tile.Tile.Layer layers = 3;</code>
+     * @return list of layers
      */
     uk.os.vt.mvt.VectorTile.Tile.Layer getLayers(int index);
     /**
      * <code>repeated .vector_tile.Tile.Layer layers = 3;</code>
+     * @return layer count
      */
     int getLayersCount();
     /**
      * <code>repeated .vector_tile.Tile.Layer layers = 3;</code>
+     * @return layer or builder
      */
     java.util.List<? extends uk.os.vt.mvt.VectorTile.Tile.LayerOrBuilder>
         getLayersOrBuilderList();

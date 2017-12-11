@@ -298,6 +298,7 @@ public final class JtsAdapter {
    * @param geometry          JTS geometry to convert
    * @param layerProps        layer properties for tagging features
    * @param userDataConverter convert {@link Geometry#userData} to MVT feature tags
+   * @return list of features
    * @see #flatFeatureList(Geometry)
    * @see #createTileGeom(Geometry, Envelope, GeometryFactory, MvtLayerParams, IGeometryFilter)
    */
@@ -315,6 +316,7 @@ public final class JtsAdapter {
    * @param flatGeoms         flat list of JTS geometry to convert
    * @param layerProps        layer properties for tagging features
    * @param userDataConverter convert {@link Geometry#userData} to MVT feature tags
+   * @return list of features
    * @see #flatFeatureList(Geometry)
    * @see #createTileGeom(Geometry, Envelope, GeometryFactory, MvtLayerParams, IGeometryFilter)
    */

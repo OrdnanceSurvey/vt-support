@@ -45,13 +45,12 @@ public final class MvtLayerParams {
 
   /**
    * Construct default layer sizing parameters for MVT creation.
-   * <p>
-   * Uses defaults:
+   *
+   * <p>Uses defaults:</p>
    * <ul>
    * <li>{@link #tileSize} = 256</li>
    * <li>{@link #extent} = 4096</li>
    * </ul>
-   * </p>
    *
    * @see #MvtLayerParams(int, int)
    */
@@ -62,8 +61,8 @@ public final class MvtLayerParams {
   /**
    * Construct layer sizing parameters for MVT creation.
    *
-   * @param tileSize the resolution of the tile in pixel coordinates, must be > 0
-   * @param extent   the resolution of the MVT local coordinate system, must be > 0
+   * @param tileSize the resolution of the tile in pixel coordinates, must be &gt; 0
+   * @param extent   the resolution of the MVT local coordinate system, must be &gt; 0
    */
   public MvtLayerParams(int tileSize, int extent) {
     if (tileSize <= 0) {
