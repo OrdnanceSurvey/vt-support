@@ -2,5 +2,6 @@ include ':vt-java'
 include ':vt-java-mbtiles'
 include ':vt-java-filesystem'
 include ':vt-java-demo'
+include ':vt-java-legacy-parser'
 
 rootProject.name = 'vt-java-root'

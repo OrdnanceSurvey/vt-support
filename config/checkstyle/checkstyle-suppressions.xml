@@ -6,5 +6,8 @@
 
 <suppressions>
 
+    <suppress checks="." files="VectorTile.java" />
+    <suppress checks="." files="Vec2d.java" />
+
 </suppressions>
 

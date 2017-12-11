@@ -17,9 +17,6 @@
 package uk.os.vt.fluent;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.MvtEncoder;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsLayer;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -41,6 +38,9 @@ import uk.os.vt.Entry;
 import uk.os.vt.Key;
 import uk.os.vt.Metadata;
 import uk.os.vt.Storage;
+import uk.os.vt.mvt.adapt.jts.MvtEncoder;
+import uk.os.vt.mvt.adapt.jts.model.JtsLayer;
+import uk.os.vt.mvt.adapt.jts.model.JtsMvt;
 
 public class DataSource {
 

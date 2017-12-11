@@ -17,12 +17,11 @@
 package uk.os.vt.fluent;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.MvtReader;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.TagKeyValueMapConverter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import uk.os.vt.mvt.adapt.jts.MvtReader;
+import uk.os.vt.mvt.adapt.jts.TagKeyValueMapConverter;
+import uk.os.vt.mvt.adapt.jts.model.JtsMvt;
 
 public class MvtDecoder {
 

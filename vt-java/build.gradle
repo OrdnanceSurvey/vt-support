@@ -25,8 +25,9 @@ sourceSets {
 
 // tag::dependencies[]
 dependencies {
+    compile project(':vt-java-legacy-parser')
+    // UPSTREAM 1.8: compile 'com.wdtinc:mapbox-vector-tile:2.0.0'
     compile 'io.reactivex.rxjava2:rxjava:2.1.6'
-    compile 'com.wdtinc:mapbox-vector-tile:2.0.0'
     compile 'com.google.code.findbugs:annotations:3.0.1u2'
     compile 'org.json:json:20171018'
 

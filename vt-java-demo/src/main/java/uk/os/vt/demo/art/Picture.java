@@ -20,19 +20,18 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.wdtinc.mapbox_vector_tile.VectorTile;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.IGeometryFilter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.JtsAdapter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.TileGeomResult;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.UserDataIgnoreConverter;
-import com.wdtinc.mapbox_vector_tile.build.MvtLayerBuild;
-import com.wdtinc.mapbox_vector_tile.build.MvtLayerParams;
-import com.wdtinc.mapbox_vector_tile.build.MvtLayerProps;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import uk.os.vt.mvt.VectorTile;
+import uk.os.vt.mvt.adapt.jts.IGeometryFilter;
+import uk.os.vt.mvt.adapt.jts.JtsAdapter;
+import uk.os.vt.mvt.adapt.jts.TileGeomResult;
+import uk.os.vt.mvt.adapt.jts.UserDataIgnoreConverter;
+import uk.os.vt.mvt.build.MvtLayerBuild;
+import uk.os.vt.mvt.build.MvtLayerParams;
+import uk.os.vt.mvt.build.MvtLayerProps;
 
 public class Picture {
 

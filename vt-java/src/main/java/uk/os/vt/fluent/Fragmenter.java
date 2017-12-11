@@ -25,18 +25,18 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.IGeometryFilter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.JtsAdapter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.TileGeomResult;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsLayer;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
-import com.wdtinc.mapbox_vector_tile.build.MvtLayerParams;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import uk.os.vt.CoordinateConversion;
 import uk.os.vt.Key;
+import uk.os.vt.mvt.adapt.jts.IGeometryFilter;
+import uk.os.vt.mvt.adapt.jts.JtsAdapter;
+import uk.os.vt.mvt.adapt.jts.TileGeomResult;
+import uk.os.vt.mvt.adapt.jts.model.JtsLayer;
+import uk.os.vt.mvt.adapt.jts.model.JtsMvt;
+import uk.os.vt.mvt.build.MvtLayerParams;
 
 class Fragmenter {
 
