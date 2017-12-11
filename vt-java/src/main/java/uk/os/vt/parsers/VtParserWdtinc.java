@@ -18,17 +18,16 @@ package uk.os.vt.parsers;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.MvtReader;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.TagKeyValueMapConverter;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsLayer;
-import com.wdtinc.mapbox_vector_tile.adapt.jts.model.JtsMvt;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import uk.os.vt.Entry;
+import uk.os.vt.mvt.adapt.jts.MvtReader;
+import uk.os.vt.mvt.adapt.jts.TagKeyValueMapConverter;
+import uk.os.vt.mvt.adapt.jts.model.JtsLayer;
+import uk.os.vt.mvt.adapt.jts.model.JtsMvt;
 
 public class VtParserWdtinc implements VtParser {
 

@@ -1,0 +1,40 @@
+apply plugin: 'java'
+
+version =  VERSION_NAME
+group =  GROUP
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+//    sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+//    targetCompatibility = rootProject.ext.targetCompatibilityVersion
+}
+
+configurations {
+    provided
+    testiCompile.extendsFrom testCompile
+    testiRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+}
+
+// tag::dependencies[]
+dependencies {
+    compile 'com.google.protobuf:protobuf-java:3.0.0-beta-2'
+    compile 'com.vividsolutions:jts-core:1.14.0'
+    compile 'org.slf4j:slf4j-nop:1.7.25'
+    testCompile deps.junit
+}
+// end::dependencies[]
+
+// tag::wrapper[]
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
+// end::wrapper[]
+
+apply from: rootProject.file('gradle/gradle-mvn-push-java.gradle')
