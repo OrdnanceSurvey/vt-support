@@ -500,7 +500,6 @@ public final class MvtReader {
   /**
    * Classifies Polygon and MultiPolygon rings.
    */
-  @FunctionalInterface
   public interface RingClassifier {
 
     /**

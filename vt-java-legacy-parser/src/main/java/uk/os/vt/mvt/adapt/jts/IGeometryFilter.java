@@ -18,7 +18,6 @@ package uk.os.vt.mvt.adapt.jts;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-@FunctionalInterface
 public interface IGeometryFilter {
 
   /**
