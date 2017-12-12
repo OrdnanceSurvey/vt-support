@@ -50,7 +50,15 @@ public final class MvtLayerProps {
   public int addKey(String key) {
     Objects.requireNonNull(key);
     int nextIndex = keys.size();
-    final Integer mapIndex = keys.putIfAbsent(key, nextIndex);
+    // Android API 24 call
+    // final Integer mapIndex = keys.putIfAbsent(key, nextIndex);
+    final Integer mapIndex;
+    if (!vals.containsKey(key)) {
+      mapIndex = vals.put(key, nextIndex);
+    } else {
+      mapIndex = vals.get(key);
+    }
+
     return mapIndex == null ? nextIndex : mapIndex;
   }
 
@@ -70,7 +78,16 @@ public final class MvtLayerProps {
     }
 
     int nextIndex = vals.size();
-    final Integer mapIndex = vals.putIfAbsent(value, nextIndex);
+
+    // Android API 24 call
+    // final Integer mapIndex = vals.putIfAbsent(value, nextIndex);
+    final Integer mapIndex;
+    if (!vals.containsKey(value)) {
+      mapIndex = vals.put(value, nextIndex);
+    } else {
+      mapIndex = vals.get(value);
+    }
+
     return mapIndex == null ? nextIndex : mapIndex;
   }
 
