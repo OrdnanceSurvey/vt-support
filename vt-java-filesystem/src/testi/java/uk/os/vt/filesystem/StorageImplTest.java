@@ -27,8 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.junit.AfterClass;
@@ -142,8 +140,10 @@ public class StorageImplTest {
       throw new IllegalStateException("Problem accessing resources!");
     }
     try {
-      final Path path = Paths.get(result.toURI());
-      return path.toFile();
+      // Android API 26 call
+      // final Path path = Paths.get(result.toURI());
+      // return path.toFile();
+      return new File(result.toURI());
     } catch (final Exception ex) {
       throw new IOException("cannot return resource: " + file, ex);
     }

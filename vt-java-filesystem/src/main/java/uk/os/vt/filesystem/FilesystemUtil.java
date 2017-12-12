@@ -22,8 +22,9 @@ import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
 import io.reactivex.Observable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,14 +74,15 @@ class FilesystemUtil {
 
   public static Entry toEntry(File file) throws IOException {
 
-    final boolean isValidVtSize = file.length() <= 500 * KILOBYTE;
+    final boolean isValidVtSize = file.length() <= 512 * KILOBYTE;
     if (!isValidVtSize) {
       throw new IOException("Illegal vector tile - file exceeds 500kb! " + file.getAbsolutePath());
     }
 
     final Matcher m = PATTERN.matcher(file.getAbsolutePath());
     if (m.matches()) {
-      byte[] bytes = Files.readAllBytes(file.toPath());
+      // Android API 26 - byte[] bytes = Files.readAllBytes(file.toPath());
+      byte[] bytes = read(file);
 
       final boolean isCompressed = CompressUtil.isGzipStream(bytes);
       bytes = isCompressed ? CompressUtil.getUncompressedFromGzip(bytes) : bytes;
@@ -165,6 +167,30 @@ class FilesystemUtil {
     final String relativePath = entry.getZoomLevel() + File.separator + entry.getColumn()
         + File.separator + entry.getRow() + DEFAULT_FILE_EXTENSION;
     return new File(baseDirectory, relativePath);
+  }
+
+  // normally this would be "byte[] bytes = Files.readAllBytes(file.toPath());"
+  private static byte[] read(File file) throws IOException {
+    if (file.length() > 512 * KILOBYTE) {
+      throw new IOException("file too big");
+    }
+
+    byte[] buffer = new byte[(int) file.length()];
+    InputStream ios = null;
+    try {
+      ios = new FileInputStream(file);
+      if (ios.read(buffer) == -1) {
+        throw new IOException(
+            "EOF reached while trying to read the whole file");
+      }
+    } finally {
+      try {
+        if (ios != null) {
+          ios.close();
+        }
+      } catch (IOException expected) { }
+    }
+    return buffer;
   }
 
   /**

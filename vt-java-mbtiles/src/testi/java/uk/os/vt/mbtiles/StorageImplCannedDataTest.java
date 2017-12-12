@@ -24,8 +24,6 @@ import io.reactivex.observers.TestObserver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -177,8 +175,10 @@ public class StorageImplCannedDataTest {
     }
 
     try {
-      final Path path = Paths.get(result.toURI());
-      return path.toFile();
+      // Android API 26 call
+      // final Path path = Paths.get(result.toURI());
+      // return path.toFile();
+      return new File(result.toURI());
     } catch (final Exception ex) {
       LOG.error("cannot return resource: " + file);
       return null;
