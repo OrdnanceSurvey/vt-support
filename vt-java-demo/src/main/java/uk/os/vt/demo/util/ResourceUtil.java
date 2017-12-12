@@ -17,11 +17,6 @@
 package uk.os.vt.demo.util;
 
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +33,12 @@ public final class ResourceUtil {
    * @return a file reference
    */
   public static File getFile(String file) {
-    final URL result = ResourceUtil.class.getClassLoader().getResource(file);
     try {
-      Path path = Paths.get(result.toURI());
-      return path.toFile();
-    } catch (final URISyntaxException ex) {
+      // Android API 26 call
+      // Path path = Paths.get(result.toURI());
+      // return path.toFile();
+      return new File(file);
+    } catch (final NullPointerException ex) {
       LOG.error("Cannot find resource: " + file);
       return null;
     }

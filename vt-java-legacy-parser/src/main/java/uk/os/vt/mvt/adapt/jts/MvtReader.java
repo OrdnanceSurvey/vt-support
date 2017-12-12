@@ -28,10 +28,10 @@ import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public final class MvtReader {
    * See {@link #loadMvt(InputStream, GeometryFactory, ITagConverter, RingClassifier)}.
    * Uses {@link #RING_CLASSIFIER_V2_1} for forming Polygons and MultiPolygons.
    *
-   * @param path         path to the MVT
+   * @param file         path to the MVT
    * @param geomFactory  allows for JTS geometry creation
    * @param tagConverter converts MVT feature tags to JTS user data object
    * @return JTS MVT with geometry in MVT coordinates
@@ -69,17 +69,17 @@ public final class MvtReader {
    * @see Geometry#getUserData()
    * @see RingClassifier
    */
-  public static JtsMvt loadMvt(Path path,
+  public static JtsMvt loadMvt(File file,
                                GeometryFactory geomFactory,
                                ITagConverter tagConverter) throws IOException {
-    return loadMvt(path, geomFactory, tagConverter, RING_CLASSIFIER_V2_1);
+    return loadMvt(file, geomFactory, tagConverter, RING_CLASSIFIER_V2_1);
   }
 
   /**
    * Convenience method for loading MVT from file.
    * See {@link #loadMvt(InputStream, GeometryFactory, ITagConverter, RingClassifier)}.
    *
-   * @param path           path to the MVT
+   * @param file           path to the MVT
    * @param geomFactory    allows for JTS geometry creation
    * @param tagConverter   converts MVT feature tags to JTS user data object
    * @param ringClassifier determines how rings are parsed into Polygons and MultiPolygons
@@ -90,13 +90,13 @@ public final class MvtReader {
    * @see Geometry#getUserData()
    * @see RingClassifier
    */
-  public static JtsMvt loadMvt(Path path,
+  public static JtsMvt loadMvt(File file,
                                GeometryFactory geomFactory,
                                ITagConverter tagConverter,
                                RingClassifier ringClassifier) throws IOException {
     final JtsMvt jtsMvt;
 
-    try (final InputStream is = new FileInputStream(path.toFile())) {
+    try (final InputStream is = new FileInputStream(file)) {
       jtsMvt = loadMvt(is, geomFactory, tagConverter, ringClassifier);
     }
 

@@ -23,8 +23,8 @@ import static org.junit.Assert.fail;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,7 +44,7 @@ public final class MvtReaderTest {
   public void testLayers() {
     try {
       JtsMvt result = MvtReader.loadMvt(
-          Paths.get("src/test/resources/vec_tile_test/game.mvt"),
+          new File("src/test/resources/vec_tile_test/game.mvt"),
           new GeometryFactory(),
           new TagKeyValueMapConverter());
 
@@ -110,17 +110,17 @@ public final class MvtReaderTest {
     return allGeoms;
   }
 
-  private static JtsMvt loadMvt(String path) throws IOException {
+  private static JtsMvt loadMvt(String file) throws IOException {
     return MvtReader.loadMvt(
-        Paths.get(path),
+        new File(file),
         new GeometryFactory(),
         new TagKeyValueMapConverter());
   }
 
-  private static JtsMvt loadMvt(String path,
+  private static JtsMvt loadMvt(String file,
                                 MvtReader.RingClassifier ringClassifier) throws IOException {
     return MvtReader.loadMvt(
-        Paths.get(path),
+        new File(file),
         new GeometryFactory(),
         new TagKeyValueMapConverter(),
         ringClassifier);
