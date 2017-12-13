@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0.7 *(2017-12-13)*
+----------------------------
+* New: vt-java and vt-java-filesystem working on Android API 21
+
 Version 2.0.6 *(2017-12-11)*
 ----------------------------
 * New: add legacy Java 1.7 parser to work with legacy Android
