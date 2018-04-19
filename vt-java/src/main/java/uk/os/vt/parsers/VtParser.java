@@ -16,11 +16,10 @@
 
 package uk.os.vt.parsers;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import java.io.IOException;
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
 import uk.os.vt.Entry;
 
 public interface VtParser {

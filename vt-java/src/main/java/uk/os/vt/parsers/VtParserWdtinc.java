@@ -16,13 +16,13 @@
 
 package uk.os.vt.parsers;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import uk.os.vt.Entry;
 import uk.os.vt.mvt.adapt.jts.MvtReader;
 import uk.os.vt.mvt.adapt.jts.TagKeyValueMapConverter;

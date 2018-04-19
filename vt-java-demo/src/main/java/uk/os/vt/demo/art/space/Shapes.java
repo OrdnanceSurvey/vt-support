@@ -18,7 +18,7 @@ package uk.os.vt.demo.art.space;
 
 import static uk.os.vt.demo.art.Util.toCoordinate;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Space invaders shapes.

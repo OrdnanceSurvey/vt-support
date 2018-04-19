@@ -16,10 +16,9 @@
 
 package uk.os.vt.mvt.adapt.jts.model;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import java.util.ArrayList;
 import java.util.Collection;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * <p>JTS model of a Mapbox Vector Tile (MVT) layer.</p>

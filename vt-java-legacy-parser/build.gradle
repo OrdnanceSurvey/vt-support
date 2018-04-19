@@ -29,7 +29,7 @@ tasks.withType(Javadoc) {
 // tag::dependencies[]
 dependencies {
     compile 'com.google.protobuf:protobuf-java:3.0.0-beta-2'
-    compile 'com.vividsolutions:jts-core:1.14.0'
+    compile 'org.locationtech.jts:jts-core:1.15.0'
     compile 'org.slf4j:slf4j-nop:1.7.25'
     testCompile deps.junit
 }

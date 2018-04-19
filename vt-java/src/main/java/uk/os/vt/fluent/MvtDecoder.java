@@ -16,9 +16,9 @@
 
 package uk.os.vt.fluent;
 
-import com.vividsolutions.jts.geom.GeometryFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import org.locationtech.jts.geom.GeometryFactory;
 import uk.os.vt.mvt.adapt.jts.MvtReader;
 import uk.os.vt.mvt.adapt.jts.TagKeyValueMapConverter;
 import uk.os.vt.mvt.adapt.jts.model.JtsMvt;

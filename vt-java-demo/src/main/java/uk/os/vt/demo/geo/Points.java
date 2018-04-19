@@ -18,10 +18,10 @@ package uk.os.vt.demo.geo;
 
 import static uk.os.vt.demo.geo.Util.createPointXy;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 import java.util.Arrays;
 import java.util.List;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 public class Points {
 

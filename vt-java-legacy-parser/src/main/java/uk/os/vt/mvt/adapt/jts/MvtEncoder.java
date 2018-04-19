@@ -16,9 +16,9 @@
 
 package uk.os.vt.mvt.adapt.jts;
 
-import com.vividsolutions.jts.geom.Geometry;
 import java.util.Collection;
 import java.util.List;
+import org.locationtech.jts.geom.Geometry;
 import uk.os.vt.mvt.VectorTile;
 import uk.os.vt.mvt.adapt.jts.model.JtsLayer;
 import uk.os.vt.mvt.adapt.jts.model.JtsMvt;

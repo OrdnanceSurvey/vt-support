@@ -16,14 +16,14 @@
 
 package uk.os.vt.demo.art;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import uk.os.vt.mvt.VectorTile;
 import uk.os.vt.mvt.adapt.jts.IGeometryFilter;
 import uk.os.vt.mvt.adapt.jts.JtsAdapter;
