@@ -16,13 +16,13 @@
 
 package uk.os.vt.demo.art;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.locationtech.jts.geom.Coordinate;
 
 public class Util {
 

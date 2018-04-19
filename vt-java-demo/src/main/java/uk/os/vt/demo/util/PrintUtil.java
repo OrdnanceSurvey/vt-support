@@ -16,11 +16,11 @@
 
 package uk.os.vt.demo.util;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+
+import org.locationtech.jts.geom.Geometry;
 
 import uk.os.vt.Entry;
 import uk.os.vt.parsers.VtParser;

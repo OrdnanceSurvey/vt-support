@@ -16,27 +16,27 @@
 
 package uk.os.vt.mvt.adapt.jts;
 
-import com.vividsolutions.jts.algorithm.CGAlgorithms;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateArrays;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPoint;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.TopologyException;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import org.locationtech.jts.algorithm.Area;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateArrays;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.LoggerFactory;
 import uk.os.vt.mvt.VectorTile;
 import uk.os.vt.mvt.build.MvtLayerParams;
@@ -397,7 +397,7 @@ public final class JtsAdapter {
         final LineString exteriorRing = nextPoly.getExteriorRing();
 
         // Area must be non-zero
-        final double exteriorArea = CGAlgorithms.signedArea(exteriorRing.getCoordinates());
+        final double exteriorArea = Area.ofRingSigned(exteriorRing.getCoordinates());
         if (((int) Math.round(exteriorArea)) == 0) {
           continue;
         }
@@ -416,7 +416,7 @@ public final class JtsAdapter {
           final LineString nextInteriorRing = nextPoly.getInteriorRingN(ringIndex);
 
           // Area must be non-zero
-          final double interiorArea = CGAlgorithms.signedArea(nextInteriorRing.getCoordinates());
+          final double interiorArea = Area.ofRingSigned(nextInteriorRing.getCoordinates());
           if (((int) Math.round(interiorArea)) == 0) {
             continue;
           }

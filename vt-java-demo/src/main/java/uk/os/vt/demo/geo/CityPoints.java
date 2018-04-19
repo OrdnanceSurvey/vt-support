@@ -18,7 +18,7 @@ package uk.os.vt.demo.geo;
 
 import static uk.os.vt.demo.geo.Util.createPoint;
 
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Point;
 
 public class CityPoints {
 

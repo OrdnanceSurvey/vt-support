@@ -16,7 +16,7 @@
 
 package uk.os.vt;
 
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Point;
 
 /**
  * Google tiling scheme with the origin at the top left, which is also the origin for a vector tile.

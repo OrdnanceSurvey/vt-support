@@ -16,11 +16,11 @@
 
 package uk.os.vt.mvt.adapt.jts;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import java.util.List;
 import java.util.Objects;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import uk.os.vt.mvt.build.MvtLayerParams;
 
 /**

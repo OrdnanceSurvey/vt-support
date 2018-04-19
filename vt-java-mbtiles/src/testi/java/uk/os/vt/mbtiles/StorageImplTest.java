@@ -207,7 +207,7 @@ public class StorageImplTest {
     final Entry out = storage.getEntries().blockingFirst();
     assertEquals(in, out);
 
-    Entry nonExistentEntry = new Entry(17,9,1, "".getBytes());
+    Entry nonExistentEntry = new Entry(17,9,1, getGarbageBytes(""));
     StorageResult first = storage.delete(Observable.just(out, nonExistentEntry)).blockingFirst();
     assertTrue(first.isCompleted());
   }
@@ -226,7 +226,7 @@ public class StorageImplTest {
   private static Observable<Entry> createEntries(int count) {
     List<Entry> entries = new ArrayList<>();
     for (int i = 0; i < count; i++) {
-      entries.add(new Entry(22, i, i, "".getBytes()));
+      entries.add(new Entry(22, i, i, getGarbageBytes("")));
     }
     return Observable.fromIterable(entries);
   }
@@ -249,11 +249,11 @@ public class StorageImplTest {
     return file;
   }
 
-  private byte[] getGarbageBytes() {
+  private static byte[] getGarbageBytes() {
     return getGarbageBytes("test");
   }
 
-  private byte[] getGarbageBytes(String string) {
+  private static byte[] getGarbageBytes(String string) {
     try {
       return string.getBytes("UTF-8");
     } catch (UnsupportedEncodingException uee) {

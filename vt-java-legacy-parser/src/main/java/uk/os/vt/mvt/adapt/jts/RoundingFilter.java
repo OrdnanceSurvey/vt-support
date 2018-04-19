@@ -16,8 +16,8 @@
 
 package uk.os.vt.mvt.adapt.jts;
 
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.CoordinateSequenceFilter;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateSequenceFilter;
 
 /**
  * <p>Round each coordinate value to an integer.</p>

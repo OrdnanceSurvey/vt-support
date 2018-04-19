@@ -16,9 +16,9 @@
 
 package uk.os.vt.fluent;
 
-import com.vividsolutions.jts.geom.Geometry;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.locationtech.jts.geom.Geometry;
 import uk.os.vt.Metadata;
 
 /**

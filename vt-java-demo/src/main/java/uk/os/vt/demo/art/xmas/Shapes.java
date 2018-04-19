@@ -18,7 +18,7 @@ package uk.os.vt.demo.art.xmas;
 
 import static uk.os.vt.demo.art.Util.toCoordinate;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 public class Shapes {
 

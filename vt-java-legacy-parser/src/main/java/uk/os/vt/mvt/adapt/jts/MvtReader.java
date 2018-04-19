@@ -16,24 +16,24 @@
 
 package uk.os.vt.mvt.adapt.jts;
 
-import com.vividsolutions.jts.algorithm.CGAlgorithms;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPoint;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.locationtech.jts.algorithm.Area;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.slf4j.LoggerFactory;
 import uk.os.vt.mvt.VectorTile;
 import uk.os.vt.mvt.adapt.jts.model.JtsLayer;
@@ -529,7 +529,7 @@ public final class MvtReader {
   /**
    * Area from surveyor formula must be positive for exterior rings. Obeys V2.1 spec.
    *
-   * @see CGAlgorithms#signedArea(Coordinate[])
+   * @see Area#ofRingSigned(Coordinate[])
    */
   private static final class PolyRingClassifierV2r1 implements RingClassifier {
 
@@ -542,7 +542,7 @@ public final class MvtReader {
       LinearRing outerPoly = null;
 
       for (LinearRing r : rings) {
-        double area = CGAlgorithms.signedArea(r.getCoordinates());
+        double area = Area.ofRingSigned(r.getCoordinates());
 
         if (!r.isRing()) {
           continue; // sanity check, could probably be handled in a isSimple() check
@@ -590,7 +590,7 @@ public final class MvtReader {
    * Area for surveyor formula may be positive or negative for exterior rings. Mimics Mapbox
    * parsers supporting V1.
    *
-   * @see CGAlgorithms#signedArea(Coordinate[])
+   * @see Area#ofRingSigned(Coordinate[])
    */
   private static final class PolyRingClassifierV1 implements RingClassifier {
 
@@ -603,7 +603,7 @@ public final class MvtReader {
       LinearRing outerPoly = null;
 
       for (LinearRing r : rings) {
-        double area = CGAlgorithms.signedArea(r.getCoordinates());
+        double area = Area.ofRingSigned(r.getCoordinates());
 
         if (!r.isRing()) {
           continue; // sanity check, could probably be handled in a isSimple() check

@@ -16,7 +16,6 @@
 
 package uk.os.vt.fluent;
 
-import com.vividsolutions.jts.geom.Geometry;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -32,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.os.vt.Entry;

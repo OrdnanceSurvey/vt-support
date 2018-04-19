@@ -16,12 +16,12 @@
 
 package uk.os.vt.demo.geo;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.locationtech.jts.geom.Geometry;
 
 public class Outbreaks {
 
