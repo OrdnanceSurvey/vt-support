@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0.8 *(2018-06-07)*
+----------------------------
+* Fix: replace slf4j nop with api dependency as library
+
 Version 2.0.7 *(2017-12-13)*
 ----------------------------
 * New: vt-java and vt-java-filesystem working on Android API 21
