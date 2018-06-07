@@ -33,7 +33,7 @@ dependencies {
     compile 'org.xerial:sqlite-jdbc:3.20.1'
     compile 'com.google.guava:guava:23.3-jre'
     compile 'com.github.davidmoten:rxjava2-jdbc:0.1-RC23'
-    compile 'org.slf4j:slf4j-nop:1.7.25'
+    compile 'org.slf4j:slf4j-api:1.7.25'
     testiCompile 'org.skyscreamer:jsonassert:1.5.0'
     testCompile deps.junit
     
