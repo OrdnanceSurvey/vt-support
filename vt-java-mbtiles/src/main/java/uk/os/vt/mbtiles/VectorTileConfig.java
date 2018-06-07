@@ -40,11 +40,15 @@ class VectorTileConfig {
     this.maxZoomMinY = maxZoomMinY;
   }
 
+  /**
+   * Bounding box of configuration.
+   *
+   * @return array as min longitude, min latitude, max longitude, max latitude
+   */
   double[] getExtentAsLatLon() {
-    // TODO verify
-    LOG.info("WARNING - check this!!!"); // TODO
-    return new double[] {tile2lat(maxZoomMinY, maxZoom), tile2lat(maxZoomMaxY + 1, maxZoom),
-        tile2lon(maxZoomMinX, maxZoom), tile2lon(maxZoomMaxX + 1, maxZoom)};
+    return new double[] {tile2lon(maxZoomMinX, maxZoom), tile2lat(maxZoomMaxY + 1, maxZoom),
+        tile2lon(maxZoomMaxX + 1, maxZoom), tile2lat(maxZoomMinY, maxZoom)
+    };
   }
 
   int getMaxZoom() {
