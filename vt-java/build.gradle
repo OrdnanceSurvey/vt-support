@@ -30,10 +30,12 @@ dependencies {
     compile 'io.reactivex.rxjava2:rxjava:2.1.6'
     compile 'com.google.code.findbugs:annotations:3.0.1u2'
     compile 'org.json:json:20171018'
+    compile 'org.apache.commons:commons-csv:1.6'
 
     testCompile deps.junit
     testCompile 'com.squareup.okhttp3:mockwebserver:3.1.2'
     testCompile "org.mockito:mockito-core:2.10.0"
+    testCompile 'nl.jqno.equalsverifier:equalsverifier:3.0.2'
 
 }
 // end::dependencies[]
