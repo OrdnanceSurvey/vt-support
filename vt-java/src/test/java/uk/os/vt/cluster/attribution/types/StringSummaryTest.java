@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.os.vt.cluster.attribution;
+package uk.os.vt.cluster.attribution.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import uk.os.vt.cluster.attribution.types.StringSummary;
 
 public class StringSummaryTest {
 

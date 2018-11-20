@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.os.vt.cluster.attribution;
+package uk.os.vt.cluster.attribution.types;
 
 import java.util.Objects;
 
@@ -87,7 +87,15 @@ public final class DoubleSummary {
     this.sum = sum;
   }
 
-  protected DoubleSummary(double max, double min, long samples, double sum) {
+  /**
+   * Construct a new summary.
+   *
+   * @param max maximum value encountered in the cluster
+   * @param min minimum value encountered in the cluster
+   * @param samples the total number of sample combined within the cluster
+   * @param sum the addition of all values within the cluster
+   */
+  public DoubleSummary(double max, double min, long samples, double sum) {
     this.max = max;
     this.min = min;
     this.samples = samples;
