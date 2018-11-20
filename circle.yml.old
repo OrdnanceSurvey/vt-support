@@ -1,0 +1,22 @@
+machine:
+   java:
+      version: oraclejdk8
+   post:
+      - echo $PGP_KEY | base64 --decode > ~/sec_key.gpg
+      - gpg --import --allow-secret-key-import ~/sec_key.gpg
+      - rm ~/sec_key.gpg
+      - mkdir -p ~/.gradle
+      - echo "signing.keyId=$PGP_KEY_ID" >> ~/.gradle/gradle.properties
+      - echo "signing.password=$PGP_PASSWORD" >> ~/.gradle/gradle.properties
+      - echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
+
+test:
+   override:
+      - ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest checkStyleMain checkStyleTest checkStyleTestI
+
+deployment:
+  master:
+    branch: master 
+    commands:
+      - ./gradlew clean test uploadArchives
+
