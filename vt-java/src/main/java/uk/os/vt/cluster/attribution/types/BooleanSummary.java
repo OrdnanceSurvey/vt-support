@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.os.vt.cluster.attribution;
+package uk.os.vt.cluster.attribution.types;
 
 import java.util.Objects;
 

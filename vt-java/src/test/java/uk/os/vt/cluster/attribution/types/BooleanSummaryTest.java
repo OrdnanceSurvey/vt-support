@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.os.vt.cluster.attribution;
+package uk.os.vt.cluster.attribution.types;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,18 +24,20 @@ import org.junit.Test;
 
 public class BooleanSummaryTest {
 
-  @Test(expected = IllegalArgumentException.class)
-  public void empty() {
-    new BooleanSummary(new boolean[]{});
-  }
+  @Test
+  public void checkConstructor() {
+    long trues = 3;
+    long falses = 5;
+    long samples = 10;
+    BooleanSummary booleanSummary = new BooleanSummary(trues, falses, samples);
 
-  @Test(expected = IllegalArgumentException.class)
-  public void emptyBooleanSummary() {
-    new BooleanSummary(new BooleanSummary[]{});
+    assertEquals(trues, booleanSummary.getTrues());
+    assertEquals(falses, booleanSummary.getFalses());
+    assertEquals(samples, booleanSummary.getSamples());
   }
 
   @Test
-  public void one() {
+  public void checkConstructorVar() {
     BooleanSummary summary = new BooleanSummary(true);
     check(summary, 1, 0, 1);
 
@@ -44,7 +46,7 @@ public class BooleanSummaryTest {
   }
 
   @Test
-  public void two() {
+  public void checkConstructorVar2() {
     BooleanSummary summary = new BooleanSummary(true, true);
     check(summary, 2, 0, 2);
 
@@ -56,7 +58,7 @@ public class BooleanSummaryTest {
   }
 
   @Test
-  public void three() {
+  public void checkConstructorVar3() {
     BooleanSummary summary = new BooleanSummary(true, true, true);
     check(summary, 3, 0, 3);
 
@@ -90,14 +92,10 @@ public class BooleanSummaryTest {
   }
 
   @Test
-  public void mergeSummaries() {
-    BooleanSummary summary = new BooleanSummary(true, false);
-    BooleanSummary summary2 = new BooleanSummary(true);
-    BooleanSummary summary3 = new BooleanSummary(summary, summary2);
-
-    assertEquals(2, summary3.getTrues());
-    assertEquals(1, summary3.getFalses());
-    assertEquals(3, summary3.getSamples());
+  public void checkHashcode() {
+    BooleanSummary summary = new BooleanSummary(true);
+    BooleanSummary summaryPrime = new BooleanSummary(true);
+    assertEquals(summary.hashCode(), summaryPrime.hashCode());
   }
 
   @Test
@@ -126,11 +124,25 @@ public class BooleanSummaryTest {
     assertEquals(expected, actual);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void empty() {
+    new BooleanSummary(new boolean[]{});
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void emptyBooleanSummary() {
+    new BooleanSummary(new BooleanSummary[]{});
+  }
+
   @Test
-  public void checkHashcode() {
-    BooleanSummary summary = new BooleanSummary(true);
-    BooleanSummary summaryPrime = new BooleanSummary(true);
-    assertEquals(summary.hashCode(), summaryPrime.hashCode());
+  public void merge() {
+    BooleanSummary summary = new BooleanSummary(true, false);
+    BooleanSummary summary2 = new BooleanSummary(true);
+    BooleanSummary summary3 = new BooleanSummary(summary, summary2);
+
+    assertEquals(2, summary3.getTrues());
+    assertEquals(1, summary3.getFalses());
+    assertEquals(3, summary3.getSamples());
   }
 
   private void check(BooleanSummary summary, long expectedTrues, long expectedFalses,
