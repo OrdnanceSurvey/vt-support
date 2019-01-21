@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0.9 *(2019-01-21)*
+----------------------------
+* New: basic cluster attribution helper functions
+
 Version 2.0.8 *(2018-06-07)*
 ----------------------------
 * Fix: replace slf4j nop with api dependency as library
