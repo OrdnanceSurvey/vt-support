@@ -19,12 +19,20 @@ sourceSets {
         compileClasspath += configurations.provided
     }
     testi {
-        java.srcDir('src/testi/java')
-        resources.srcDir('src/testi/resources')
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
+        compileClasspath += sourceSets.main.output + configurations.testCompile
+        runtimeClasspath += output + compileClasspath + configurations.testRuntime
     }
 }
+
+task testi(type: Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.testi.output.classesDirs
+    classpath = sourceSets.testi.runtimeClasspath
+    outputs.upToDateWhen { false }
+    mustRunAfter test
+}
+check.dependsOn testi
 
 // tag::dependencies[]
 dependencies {
@@ -38,22 +46,3 @@ dependencies {
 
 }
 // end::dependencies[]
-
-// tag::wrapper[]
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-}
-// end::wrapper[]
-
-// ---------------------------------------------------------------------------------------------------------------------
-// - Integration Test
-// - https://gradle.org/migrating-a-maven-build-to-gradle/
-// ---------------------------------------------------------------------------------------------------------------------
-task testi(type: Test) {
-    description = "Runs the integration tests"
-    group = "verification"
-    testClassesDir = sourceSets.testi.output.classesDir
-    classpath = sourceSets.testi.runtimeClasspath
-    mustRunAfter test
-}
-

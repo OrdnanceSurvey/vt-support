@@ -34,17 +34,11 @@ dependencies {
 
     testCompile deps.junit
     testCompile 'com.squareup.okhttp3:mockwebserver:3.1.2'
-    testCompile "org.mockito:mockito-core:2.10.0"
+    testCompile "org.mockito:mockito-core:2.23.4"
     testCompile 'nl.jqno.equalsverifier:equalsverifier:3.0.2'
 
 }
 // end::dependencies[]
-
-// tag::wrapper[]
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-}
-// end::wrapper[]
 
 test {
     // show standard out and standard error of the test JVM(s) on the console

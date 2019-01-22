@@ -21,7 +21,8 @@ jobs:
                   mkdir -p ~/.gradle
             # gradle fails without term env variable
             # see: https://discuss.circleci.com/t/circleci-terminal-is-a-tty-but-term-is-not-set/9965/20
-            - run: export TERM=xterm && ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest checkStyleMain checkStyleTest checkStyleTestI
+            # TODO enable spotbugs when stable - run: export TERM=xterm && ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest checkStyleMain checkStyleTest checkStyleTestI
+            - run: export TERM=xterm && ./gradlew clean test testi license pmdMain pmdTest checkStyleMain checkStyleTest checkStyleTestI
             - run:
                 name: deploy if master
                 command: |

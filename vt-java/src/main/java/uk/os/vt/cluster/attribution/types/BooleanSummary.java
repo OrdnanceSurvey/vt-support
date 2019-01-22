@@ -26,6 +26,7 @@ public final class BooleanSummary {
 
   /**
    * Enables {@link Boolean} values to be summarised.
+   * @param vars list of existing summaries to be combined
    */
   public BooleanSummary(boolean... vars) {
     throwIfEmpty(vars);

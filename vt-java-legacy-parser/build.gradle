@@ -35,10 +35,4 @@ dependencies {
 }
 // end::dependencies[]
 
-// tag::wrapper[]
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-}
-// end::wrapper[]
-
 apply from: rootProject.file('gradle/gradle-mvn-push-java.gradle')

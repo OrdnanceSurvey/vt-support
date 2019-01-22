@@ -35,7 +35,7 @@ import uk.os.vt.cluster.attribution.types.StringSummary;
  *   acceptable to legacy GIS systems, which typically can only store primitive data types alongside
  *   features.
  *   Note, however, that attributes could easily become mingled without appropriate consideration
- *   for the <&lt;attribute&gt;>:<&lt;aggregate_dimension&gt;> serialization structure.
+ *   for the &lt;attribute&gt;:&lt;aggregate_dimension&gt; serialization structure.
  * </p>
  */
 public class AttributionSerializerImpl {

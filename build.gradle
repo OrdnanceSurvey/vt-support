@@ -19,14 +19,6 @@ allprojects {
 apply from: file('gradle/check.gradle')
 apply from: file('gradle/license.gradle')
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-}
-
 allprojects {
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {

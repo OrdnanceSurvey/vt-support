@@ -19,10 +19,8 @@ sourceSets {
         compileClasspath += configurations.provided
     }
     testi {
-        java.srcDir('src/testi/java')
-        resources.srcDir('src/testi/resources')
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
+        compileClasspath += sourceSets.main.output + configurations.testCompile
+        runtimeClasspath += output + compileClasspath + configurations.testRuntime
     }
 }
 
@@ -35,31 +33,22 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'org.skyscreamer:jsonassert:1.5.0'
     testCompile deps.junit
-    
 }
 // end::dependencies[]
-
-// tag::wrapper[]
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-}
-// end::wrapper[]
 
 //test {
 //    // show standard out and standard error of the test JVM(s) on the console
 //    testLogging.showStandardStreams = false
 //}
 
-// ---------------------------------------------------------------------------------------------------------------------
-// - Integration Test
-// - https://gradle.org/migrating-a-maven-build-to-gradle/
-// ---------------------------------------------------------------------------------------------------------------------
 task testi(type: Test) {
-    description = "Runs the integration tests"
-    group = "verification"
-    testClassesDir = sourceSets.testi.output.classesDir
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.testi.output.classesDirs
     classpath = sourceSets.testi.runtimeClasspath
+    outputs.upToDateWhen { false }
     mustRunAfter test
 }
+check.dependsOn testi
 
 apply from: rootProject.file('gradle/gradle-mvn-push-java.gradle')
