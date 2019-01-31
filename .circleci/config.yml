@@ -15,10 +15,15 @@ jobs:
                 name: restore config
                 command: |
                   echo v2
-                  echo $PGP_KEY | base64 --decode > ~/sec_key.gpg
+                  echo $PGP_KEY | base64 --decode | base64 --decode > ~/sec_key.gpg
                   gpg --import --batch --allow-secret-key-import ~/sec_key.gpg
+                  gpg --batch --pinentry-mode=loopback --passphrase $PGP_PASSWORD --export-secret-keys > $HOME/.gnupg/secring.gpg
                   rm ~/sec_key.gpg
                   mkdir -p ~/.gradle
+                  echo "defining gradle signing config"
+                  echo "signing.keyId=$PGP_KEY_ID" >> ~/.gradle/gradle.properties
+                  echo "signing.password=$PGP_PASSWORD" >> ~/.gradle/gradle.properties
+                  echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
             # gradle fails without term env variable
             # see: https://discuss.circleci.com/t/circleci-terminal-is-a-tty-but-term-is-not-set/9965/20
             # TODO enable spotbugs when stable - run: export TERM=xterm && ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest checkStyleMain checkStyleTest checkStyleTestI
