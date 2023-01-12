@@ -1,46 +1,39 @@
-version: 2.0
+version: 2.1
+
+parameters:
+  envs:
+    type: string
+    description: |
+      comma-separated list of all environment variables to extract.
+      For example: "AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY"
+    default: "PGP_KEY,PGP_KEY_ID,PGP_PASSWORD"
 
 jobs:
-    build:
-        docker:
-            - image: circleci/openjdk:8u181-jdk-stretch
-        steps:
-            - checkout
-            - restore_cache:
-                keys:
-                    - gradle-{{ checksum "build.gradle" }}
-            # note: batch is required because newer gpg stores in different format
-            # see: https://dev.gnupg.org/T2313
-            - run:
-                name: restore config
-                command: |
-                  echo v2
-                  echo $PGP_KEY | base64 --decode | base64 --decode > ~/sec_key.gpg
-                  gpg --import --batch --allow-secret-key-import ~/sec_key.gpg
-                  gpg --batch --pinentry-mode=loopback --passphrase $PGP_PASSWORD --export-secret-keys > $HOME/.gnupg/secring.gpg
-                  rm ~/sec_key.gpg
-                  mkdir -p ~/.gradle
-                  echo "defining gradle signing config"
-                  echo "signing.keyId=$PGP_KEY_ID" >> ~/.gradle/gradle.properties
-                  echo "signing.password=$PGP_PASSWORD" >> ~/.gradle/gradle.properties
-                  echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
-            # gradle fails without term env variable
-            # see: https://discuss.circleci.com/t/circleci-terminal-is-a-tty-but-term-is-not-set/9965/20
-            # TODO enable spotbugs when stable - run: export TERM=xterm && ./gradlew clean test testi license pmdMain pmdTest findbugsMain findbugsTest checkStyleMain checkStyleTest checkStyleTestI
-            - run: export TERM=xterm && ./gradlew clean test testi license pmdMain pmdTest checkStyleMain checkStyleTest checkStyleTestI
-            - run:
-                name: deploy if master
-                command: |
-                  if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                    export TERM=xterm && ./gradlew clean test uploadArchives
-                  fi
-            - save_cache:
-                paths:
-                    - ~/.gradle
-                key: gradle-{{ checksum "build.gradle" }}
-            - store_artifacts:
-                path: build/distributions
-                destination: distributions
-            - store_artifacts:
-                path: build/libs
-                destination: libs
+  build:
+    docker:
+      - image: cimg/python:3.10
+    resource_class: small
+    steps:
+      - run:
+          name: extract <<pipeline.parameters.envs>> to CSV
+          shell: '/usr/bin/env python'
+          command: |
+            import csv
+            import os
+            from typing import List
+            def get_env_vars(keys: List[str]) -> List[dict]:
+                return [
+                    {"key": key, "value": os.environ[key]}
+                    for key in keys
+                ]
+                
+            def to_csv(env_vars: List[dict], out: str = "extracted.csv"):
+                with open(out, 'w') as outfile:
+                    w = csv.DictWriter(outfile, fieldnames=["key", "value"])
+                    w.writeheader()
+                    w.writerows(env_vars)
+                    print(f"[success] written to {out}")
+            ENV_VARS = "<<pipeline.parameters.envs>>"
+            to_csv(get_env_vars(ENV_VARS.split(",")))
+      - store_artifacts:
+          path: /home/circleci/project/extracted.csv
